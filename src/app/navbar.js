@@ -23,19 +23,20 @@ function Navbar({ isLoggedIn, user, onLogout }) {
             <div className="flex gap-3 items-center text-sm">
                 <a href="/produk" className="hover:bg-green-800 rounded-full px-2 py-1 transition">Produk</a>
                 <a href="/about" className="hover:bg-green-800 rounded-full px-2 py-1 transition">Tentang</a>
+
+                <a
+                    href="/cart"
+                    className="flex items-center hover:bg-green-800 rounded-full px-2 py-1 transition"
+                    aria-label="Keranjang"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.35 2.7A1 1 0 007.6 17h8.8a1 1 0 00.95-.7L21 13M7 13V6a1 1 0 011-1h6a1 1 0 011 1v7" />
+                    </svg>
+                </a>
                 {!isLoggedIn ? (
                     <a href="/login" className="hover:bg-green-800 rounded-full px-2 py-1 transition">Login</a>
                 ) : (
                     <>
-                        <a
-                            href="/cart"
-                            className="flex items-center hover:bg-green-800 rounded-full px-2 py-1 transition"
-                            aria-label="Keranjang"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.35 2.7A1 1 0 007.6 17h8.8a1 1 0 00.95-.7L21 13M7 13V6a1 1 0 011-1h6a1 1 0 011 1v7" />
-                            </svg>
-                        </a>
                         <div className="relative" ref={dropdownRef}>
                             <button
                                 onClick={() => setDropdownOpen((open) => !open)}
@@ -77,6 +78,8 @@ export default function NavbarClient() {
         "/register",
         "/forgot-password",
         "/verification-code",
+        "/admin/login",
+        "/admin/dashboard",
     ].includes(pathname);
 
     const [isLoggedIn, setIsLoggedIn] = useState(false);

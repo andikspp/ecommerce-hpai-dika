@@ -16,6 +16,8 @@ export default function FooterClient() {
         "/register",
         "/forgot-password",
         "/verification-code",
+        "/admin/login",
+        "/admin/dashboard",
     ].includes(pathname);
 
     if (hideFooter) return null;
