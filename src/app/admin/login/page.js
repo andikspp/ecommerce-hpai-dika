@@ -19,7 +19,10 @@ export default function AdminLoginPage() {
             const res = await axios.post("/api/admin/login", form);
             setMessage(res.data.message || "Login berhasil!");
             if (res.data.token) {
-                localStorage.setItem("token", res.data.token);
+                localStorage.setItem("adminToken", res.data.token);
+            }
+            if (res.data.username) {
+                localStorage.setItem("adminUsername", res.data.username);
             }
             window.location.href = "/admin/dashboard";
         } catch (err) {

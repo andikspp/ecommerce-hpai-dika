@@ -80,6 +80,13 @@ export default function NavbarClient() {
         "/verification-code",
         "/admin/login",
         "/admin/dashboard",
+        "/admin/user",
+        "/admin/kategori",
+        "/admin/produk",
+        "/admin/produk/tambah",
+        "/admin/kategori/tambah",
+        "/admin/kategori/edit",
+        "/admin/produk/edit",
     ].includes(pathname);
 
     const [isLoggedIn, setIsLoggedIn] = useState(false);

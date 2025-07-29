@@ -18,6 +18,13 @@ export default function FooterClient() {
         "/verification-code",
         "/admin/login",
         "/admin/dashboard",
+        "/admin/user",
+        "/admin/kategori",
+        "/admin/produk",
+        "/admin/produk/tambah",
+        "/admin/kategori/tambah",
+        "/admin/kategori/edit",
+        "/admin/produk/edit",
     ].includes(pathname);
 
     if (hideFooter) return null;
