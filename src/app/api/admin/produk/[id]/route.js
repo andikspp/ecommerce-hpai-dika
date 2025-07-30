@@ -9,7 +9,7 @@ export async function GET(request, { params }) {
         });
     }
     try {
-        const res = await axios.get(`http://localhost:5000/api/admin/produk/${id}`);
+        const res = await axios.get(`http://localhost:5000/api/produk/${id}`);
         return new Response(JSON.stringify(res.data), {
             status: res.status,
             headers: { "Content-Type": "application/json" },
@@ -29,7 +29,7 @@ export async function PUT(request, { params }) {
     try {
         const formData = await request.formData();
         // Kirim FormData ke backend
-        const res = await fetch(`http://localhost:5000/api/admin/produk/${id}`, {
+        const res = await fetch(`http://localhost:5000/api/produk/${id}`, {
             method: "PUT",
             body: formData,
         });
@@ -55,7 +55,7 @@ export async function DELETE(request, { params }) {
         });
     }
     try {
-        const res = await axios.delete(`http://localhost:5000/api/admin/produk/${id}`);
+        const res = await axios.delete(`http://localhost:5000/api/produk/${id}`);
         return new Response(JSON.stringify(res.data), {
             status: res.status,
             headers: { "Content-Type": "application/json" },

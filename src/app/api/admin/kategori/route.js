@@ -1,11 +1,19 @@
 import axios from "axios";
 
 export async function GET(request) {
-    // Ambil data kategori dari backend
-    try {
-        const res = await axios.get("http://localhost:5000/api/admin/kategori");
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
 
-        // Kembalikan response dari backend ke frontend
+    try {
+        let res;
+        if (id) {
+            // Ambil kategori by id
+            res = await axios.get(`http://localhost:5000/api/kategori/${id}`);
+        } else {
+            // Ambil semua kategori
+            res = await axios.get("http://localhost:5000/api/kategori");
+        }
+
         return new Response(JSON.stringify(res.data), {
             status: res.status,
             headers: { "Content-Type": "application/json" },
@@ -24,7 +32,7 @@ export async function POST(request) {
     // Kirim data kategori baru ke backend
     try {
         const { nama } = await request.json();
-        const res = await axios.post("http://localhost:5000/api/admin/kategori", { nama });
+        const res = await axios.post("http://localhost:5000/api/kategori", { nama });
 
         // Kembalikan response dari backend ke frontend
         return new Response(JSON.stringify(res.data), {
@@ -55,7 +63,7 @@ export async function PUT(request) {
     }
 
     try {
-        const res = await axios.put(`http://localhost:5000/api/admin/kategori/${id}`, { nama });
+        const res = await axios.put(`http://localhost:5000/api/kategori/${id}`, { nama });
         return new Response(JSON.stringify(res.data), {
             status: res.status,
             headers: { "Content-Type": "application/json" },
@@ -83,7 +91,7 @@ export async function DELETE(request) {
     }
 
     try {
-        const res = await axios.delete(`http://localhost:5000/api/admin/kategori/${id}`);
+        const res = await axios.delete(`http://localhost:5000/api/kategori/${id}`);
         return new Response(JSON.stringify(res.data), {
             status: res.status,
             headers: { "Content-Type": "application/json" },

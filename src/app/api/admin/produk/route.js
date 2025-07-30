@@ -3,7 +3,7 @@ import axios from "axios";
 export async function GET(request) {
     // Ambil data produk dari backend
     try {
-        const res = await axios.get("http://localhost:5000/api/admin/produk");
+        const res = await axios.get("http://localhost:5000/api/produk");
 
         // Kembalikan response dari backend ke frontend
         return new Response(JSON.stringify(res.data), {
@@ -30,7 +30,7 @@ export async function POST(request) {
         }
 
         // Kirim FormData ke backend
-        const res = await fetch("http://localhost:5000/api/admin/produk", {
+        const res = await fetch("http://localhost:5000/api/produk", {
             method: "POST",
             body: formData,
         });
@@ -61,7 +61,7 @@ export async function PATCH(request) {
 
     try {
         const { isActive } = await request.json();
-        const res = await axios.patch(`http://localhost:5000/api/admin/produk/${id}/status`, { isActive });
+        const res = await axios.patch(`http://localhost:5000/api/produk/${id}/status`, { isActive });
 
         return new Response(JSON.stringify(res.data), {
             status: res.status,
@@ -89,7 +89,7 @@ export async function PUT(request) {
 
     try {
         const formData = await request.formData();
-        const res = await fetch(`http://localhost:5000/api/admin/produk/${id}`, {
+        const res = await fetch(`http://localhost:5000/api/produk/${id}`, {
             method: "PUT",
             body: formData,
         });

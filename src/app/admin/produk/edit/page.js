@@ -39,7 +39,7 @@ export default function EditProdukPage() {
         const fetchProduk = async () => {
             if (!id) return;
             try {
-                // Ambil produk by id (bukan pakai ?id lagi)
+                // Ambil produk by id
                 const res = await axios.get(`/api/admin/produk/${id}`);
                 const produk = res.data;
                 setName(produk.name ?? "");
