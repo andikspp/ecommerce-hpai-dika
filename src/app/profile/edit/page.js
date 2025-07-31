@@ -1,6 +1,6 @@
 export const metadata = {
-    title: "Edit Profil - Agen HPAI Ika",
-    description: "Edit profil Anda di Agen HPAI Ika.",
+    title: "Edit Profil",
+    description: "Edit profil Anda di Distributor HPAI Ika.",
 };
 
 import EditProfilePage from "./editProfilePage";

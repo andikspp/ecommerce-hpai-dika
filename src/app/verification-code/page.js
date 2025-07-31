@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "Verifikasi Email - Agen HPAI Ika",
+  title: "Verifikasi Email",
 };
 
 import VerifyCodeForm from "./verifyCodeForm";

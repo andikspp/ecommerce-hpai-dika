@@ -1,8 +1,8 @@
 import React from "react";
 
 export const metadata = {
-    title: "Tentang Kami - Agen HPAI Ika",
-    description: "Pelajari lebih lanjut tentang Agen HPAI Ika dan komitmen kami terhadap kesehatan Anda.",
+    title: "Tentang Kami",
+    description: "Pelajari lebih lanjut tentang Distributor HPAI Ika dan komitmen kami terhadap kesehatan Anda.",
 };
 
 export default function aboutPage() {
@@ -11,13 +11,13 @@ export default function aboutPage() {
             <div className="max-w-2xl mx-auto bg-white dark:bg-green-900 shadow-lg rounded-xl p-8">
                 <h1 className="text-3xl font-bold text-green-700 dark:text-green-100 mb-4">Tentang Kami</h1>
                 <p className="text-green-600 dark:text-green-200 mb-6">
-                    Agen HPAI Ika adalah toko herbal terpercaya menyediakan produk-produk HPAI yang berkualitas tinggi untuk
+                    Distributor HPAI Ika adalah toko herbal terpercaya menyediakan produk-produk HPAI yang berkualitas tinggi untuk
                     kesehatan Anda. Kami berkomitmen untuk memberikan pelayanan terbaik dan produk herbal yang aman
                     serta efektif.
                 </p>
                 <h2 className="text-xl font-semibold text-green-700 dark:text-green-100 mb-2">Visi Kami</h2>
                 <p className="text-green-600 dark:text-green-200 mb-4">
-                    Menjadi agen herbal terkemuka yang menyediakan produk berkualitas tinggi untuk meningkatkan kesehatan
+                    Menjadi Distributor herbal yang menyediakan produk berkualitas tinggi untuk meningkatkan kesehatan
                     masyarakat.
                 </p>
                 <h2 className="text-xl font-semibold text-green-700 dark:text-green-100 mb-2">Misi Kami</h2>

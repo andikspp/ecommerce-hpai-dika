@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 function Footer() {
     return (
         <footer className="w-full bg-green-700 dark:bg-green-900 text-white py-4 text-center mt-12">
-            &copy; {new Date().getFullYear()} Agen HPAI Ika &mdash; Toko Herbal Terpercaya
+            &copy; {new Date().getFullYear()} Distributor HPAI Ika &mdash; Toko Herbal Terpercaya
         </footer>
     );
 }

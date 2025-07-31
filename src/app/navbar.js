@@ -1,6 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
+import axios from "axios";
 
 function Navbar({ isLoggedIn, user, onLogout }) {
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -19,7 +20,7 @@ function Navbar({ isLoggedIn, user, onLogout }) {
 
     return (
         <nav className="w-full bg-green-700 dark:bg-green-900 text-white px-6 py-4 flex items-center justify-between shadow">
-            <a href="/" className="font-bold text-xl tracking-wide">Agen HPAI Ika</a>
+            <a href="/" className="font-bold text-xl tracking-wide">Distributor HPAI Ika</a>
             <div className="flex gap-3 items-center text-sm">
                 <a
                     href="/cart"
@@ -105,7 +106,31 @@ export default function NavbarClient() {
         }
     }, [pathname]);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        // 1. Ambil cart dari localStorage
+        const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+        const token = localStorage.getItem("token");
+        let userId = null;
+        if (token) {
+            try {
+                const payload = JSON.parse(atob(token.split(".")[1]));
+                userId = payload.id; // pastikan payload ada id user
+            } catch { }
+        }
+
+        // 2. Simpan cart ke database jika ada userId dan cart tidak kosong
+        if (userId && cart.length > 0) {
+            try {
+                await axios.post("/api/cart/save", { userId, cart });
+            } catch (e) {
+                // Optional: tampilkan error atau abaikan
+            }
+        }
+
+        // 3. Bersihkan cart dari localStorage
+        localStorage.removeItem("cart");
+
+        // 4. Lanjutkan proses logout
         localStorage.removeItem("token");
         setIsLoggedIn(false);
         setUser(null);

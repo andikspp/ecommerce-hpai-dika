@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Agen HPAI Ika - Toko Herbal Terpercaya",
+  title: "Distributor HPAI Ika",
   description: "Belanja produk herbal HPAI asli, aman, dan terpercaya.",
 };
 

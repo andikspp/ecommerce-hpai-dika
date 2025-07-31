@@ -1,5 +1,5 @@
 export const metadata = {
-    title: "Lupa Password - Agen HPAI Ika",
+    title: "Lupa Password",
     description: "Reset password akun Anda dengan email terdaftar.",
 };
 

@@ -1,6 +1,6 @@
 export const metadata = {
-    title: "Profil - Agen HPAI Ika",
-    description: "Kelola profil Anda di Agen HPAI Ika.",
+    title: "Profil ",
+    description: "Kelola profil Anda di Distributor HPAI Ika.",
 };
 
 // import content dari profilePage

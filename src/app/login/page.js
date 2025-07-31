@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "Login - Agen HPAI Ika",
+  title: "Login",
   description: "Login untuk belanja produk herbal HPAI asli.",
 };
 

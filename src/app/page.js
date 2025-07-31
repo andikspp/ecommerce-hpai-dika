@@ -108,7 +108,7 @@ export default function Homepage() {
                     {produk.price}
                   </div>
                   <a
-                    href={`/produk/${produk.id}`}
+                    href={`/product/${produk.id}`}
                     className="mt-auto bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition"
                   >
                     Lihat Detail
@@ -122,7 +122,7 @@ export default function Homepage() {
         {/* Section Alamat Toko */}
         <section className="mt-16">
           <h2 className="text-2xl font-bold text-green-700 dark:text-green-100 mb-4 text-center">
-            Alamat & Kontak Agen HPAI Ika
+            Alamat & Kontak Distributor HPAI Ika
           </h2>
           <p className="text-green-700 dark:text-green-200 text-center mb-4">
             Ingin membeli langsung? Silakan kunjungi alamat kami di bawah ini.
@@ -130,7 +130,7 @@ export default function Homepage() {
           <div className="bg-white dark:bg-green-900 rounded-xl shadow-md p-6 flex flex-col md:flex-row items-center justify-between gap-6 max-w-3xl mx-auto">
             <div>
               <div className="text-green-800 dark:text-green-100 font-semibold mb-2">
-                Agen HPAI Ika
+                Distributor HPAI Ika
               </div>
               <div className="text-green-700 dark:text-green-200 mb-1">
                 Perumahan Grand Mutiara Nanggerang Blok C No. 23, Desa Nanggerang, Kecamatan Tajurhalang, Kabupaten Bogor, Jawa Barat
