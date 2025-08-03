@@ -10,38 +10,42 @@ export default function CartPage() {
 
     useEffect(() => {
         const fetchCart = async () => {
-            // 1. Cek localStorage
-            const cartData = JSON.parse(localStorage.getItem("cart") || "[]");
-            console.log("Cart data from localStorage:", cartData);
-            if (cartData.length > 0) {
-                setCart(cartData);
-                setLoading(false);
-            } else {
-                // 2. Jika kosong, cek user login
-                const token = localStorage.getItem("token");
-                let userId = null;
-                if (token) {
-                    try {
-                        const payload = JSON.parse(atob(token.split(".")[1]));
-                        userId = payload.id;
-                    } catch { }
-                }
-                // 3. Jika user login, fetch cart dari database
-                if (userId) {
-                    try {
-                        console.log("Mengirim permintaan ke /api/cart dengan userId:", userId);
-                        const res = await axios.get(`/api/cart/${userId}`);
-                        // Pastikan backend mengembalikan array cart items
-                        setCart(res.data.items || []);
-                        console.log("Cart fetched from server:", res.data.items);
-                    } catch {
-                        setCart([]);
-                    }
-                } else {
-                    setCart([]);
-                }
-                setLoading(false);
+            const localCart = JSON.parse(localStorage.getItem("cart") || "[]");
+            const token = localStorage.getItem("token");
+            let userId = null;
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split(".")[1]));
+                    userId = payload.id;
+                } catch { }
             }
+
+            if (userId) {
+                // Fetch cart dari database
+                let dbCart = [];
+                try {
+                    const res = await axios.get(`/api/cart/${userId}`);
+                    dbCart = res.data.items || [];
+                } catch { }
+                // Merge localCart dan dbCart (by productId, qty diutamakan dari localCart jika ada, tidak dijumlahkan)
+                const merged = [...dbCart];
+                localCart.forEach(localItem => {
+                    const foundIdx = merged.findIndex(item =>
+                        (item.productId || item.id) === (localItem.productId || localItem.id)
+                    );
+                    if (foundIdx !== -1) {
+                        // Jika ada di local dan db, gunakan qty dari localCart (prioritas perubahan user)
+                        merged[foundIdx].qty = localItem.qty;
+                    } else {
+                        merged.push(localItem);
+                    }
+                });
+                setCart(merged);
+                localStorage.setItem("cart", JSON.stringify(merged));
+            } else {
+                setCart(localCart);
+            }
+            setLoading(false);
         };
         fetchCart();
     }, []);
@@ -53,10 +57,30 @@ export default function CartPage() {
     );
 
     // Hapus item dari cart
-    const handleRemove = (id) => {
+    const handleRemove = async (id) => {
         const newCart = cart.filter((item) => item.id !== id);
         setCart(newCart);
         localStorage.setItem("cart", JSON.stringify(newCart));
+
+        // Jika cart kosong setelah penghapusan dan user login, hapus cart di backend
+        if (newCart.length === 0) {
+            const token = localStorage.getItem("token");
+            let userId = null;
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split(".")[1]));
+                    userId = payload.id;
+                } catch { }
+            }
+            if (userId) {
+                try {
+                    await axios.post("/api/cart/save", { userId, cart: [] });
+                } catch (e) {
+                    // Optional: tampilkan error jika gagal menghapus cart di backend
+                    // console.error("Gagal menghapus cart di backend:", e);
+                }
+            }
+        }
     };
 
     // Ubah qty

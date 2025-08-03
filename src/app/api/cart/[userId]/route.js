@@ -17,6 +17,13 @@ export async function GET(request, { params }) {
             headers: { "Content-Type": "application/json" },
         });
     } catch (error) {
+        if (error.response?.status === 404) {
+            // Cart tidak ditemukan, return 200 dengan data null
+            return new Response(JSON.stringify(null), {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
         const status = error.response?.status || 500;
         const data = error.response?.data || { error: "Terjadi kesalahan pada server Next.js" };
         return new Response(JSON.stringify(data), {
