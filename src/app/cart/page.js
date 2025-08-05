@@ -178,14 +178,12 @@ export default function CartPage() {
                                     return sum + (product.price * item.qty);
                                 }, 0).toLocaleString("id-ID")}</span>
                             </div>
-                            <a
-                                href="https://wa.me/6281234567890?text=Halo,%20saya%20ingin%20memesan%20produk%20dari%20keranjang%20saya."
-                                target="_blank"
-                                rel="noopener noreferrer"
+                            <Link
+                                href="/checkout"
                                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition"
                             >
-                                Checkout via WhatsApp
-                            </a>
+                                Checkout
+                            </Link>
                         </div>
                     </>
                 )}

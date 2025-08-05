@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 
 const PROFILE_FIELDS = [
+    "name",
     "username",
     "email",
     "Telepon",
@@ -72,7 +73,8 @@ export default function ProfilePage() {
                 <div className="w-24 h-24 rounded-full bg-gradient-to-br from-green-400 to-green-700 flex items-center justify-center text-4xl font-bold text-white shadow-lg mb-3">
                     {user.username?.charAt(0).toUpperCase() || "U"}
                 </div>
-                <h2 className="text-2xl font-bold text-green-800 dark:text-green-100 mb-1">{user.username}</h2>
+                <h2 className="text-2xl font-bold text-green-800 dark:text-green-100 mb-1">{user.name}</h2>
+                <span className="text-lg text-green-600 dark:text-green-300">@{user.username}</span>
                 <span className="text-gray-500 dark:text-gray-300">{user.email}</span>
             </div>
 

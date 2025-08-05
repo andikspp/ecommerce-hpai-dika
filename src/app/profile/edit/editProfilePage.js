@@ -7,6 +7,7 @@ import Swal from "sweetalert2";
 export default function EditProfilePage() {
     const router = useRouter();
     const [form, setForm] = useState({
+        name: "",
         username: "",
         email: "",
         Telepon: "",
@@ -36,6 +37,7 @@ export default function EditProfilePage() {
                 console.log("Profile data:", res.data);
 
                 setForm({
+                    name: res.data.name || "",
                     username: res.data.username || "",
                     email: res.data.email || "",
                     Telepon: res.data.Telepon || "",
@@ -116,6 +118,17 @@ export default function EditProfilePage() {
                 <div>
                     <h3 className="text-lg font-semibold mb-4 text-green-700 dark:text-green-200">Data Diri</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="md:col-span-2">
+                            <label className="block mb-1 font-semibold">Nama Lengkap</label>
+                            <input
+                                type="text"
+                                name="name"
+                                value={form.name}
+                                onChange={handleChange}
+                                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-400"
+                                required
+                            />
+                        </div>
                         <div>
                             <label className="block mb-1 font-semibold">Username</label>
                             <input
