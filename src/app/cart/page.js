@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { FaTrash } from "react-icons/fa";
 import Link from "next/link";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 export default function CartPage() {
     const [cart, setCart] = useState([]);
@@ -178,12 +179,30 @@ export default function CartPage() {
                                     return sum + (product.price * item.qty);
                                 }, 0).toLocaleString("id-ID")}</span>
                             </div>
-                            <Link
-                                href="/checkout"
+                            <button
+                                onClick={() => {
+                                    const token = localStorage.getItem("token");
+                                    if (!token) {
+                                        Swal.fire({
+                                            icon: 'warning',
+                                            title: 'Anda belum login',
+                                            text: 'Silakan login terlebih dahulu untuk melanjutkan ke checkout.',
+                                            confirmButtonText: 'Login',
+                                            showCancelButton: true,
+                                            cancelButtonText: 'Batal'
+                                        }).then((result) => {
+                                            if (result.isConfirmed) {
+                                                window.location.href = "/login";
+                                            }
+                                        });
+                                        return;
+                                    }
+                                    window.location.href = "/checkout";
+                                }}
                                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition"
                             >
                                 Checkout
-                            </Link>
+                            </button>
                         </div>
                     </>
                 )}

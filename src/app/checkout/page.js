@@ -1,7 +1,8 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import Link from "next/link";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 export default function CheckoutPage() {
     const [cart, setCart] = useState([]);
@@ -9,15 +10,64 @@ export default function CheckoutPage() {
     const [user, setUser] = useState(null);
     const [shippingMethod, setShippingMethod] = useState("jne");
     const [ongkir, setOngkir] = useState(20000);
+    const [total, setTotal] = useState(0);
+    const [note, setNote] = useState("");
 
     useEffect(() => {
+        if (typeof window !== "undefined") {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                window.location.href = "/login";
+            } else {
+                setLoading(false);
+            }
+        }
+
         // Ambil cart dari localStorage
-        const localCart = JSON.parse(localStorage.getItem("cart") || "[]");
+        let localCart = [];
+        try {
+            localCart = JSON.parse(localStorage.getItem("cart") || "[]");
+        } catch {
+            localCart = [];
+        }
         setCart(localCart);
-        // Ambil user dari token jika ada
+        if (localCart.length > 0) {
+            // Hitung total dari localCart
+            setTotal(localCart.reduce((sum, item) => {
+                const price = item.price !== undefined ? item.price : (item.product?.price || 0);
+                return sum + (price * item.qty);
+            }, 0));
+            setLoading(false);
+        } else {
+            // Jika cart kosong di localStorage, ambil total dari server
+            const token = localStorage.getItem("token");
+            if (token) {
+                const userId = JSON.parse(atob(token.split('.')[1])).id; // Ambil userId dari token
+                console.log("Fetching cart total for userId:", userId);
+                axios.get(`/api/cart?userId=${userId}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                })
+                    .then((res) => {
+                        const cartData = res.data.cart || [];
+                        setCart(cartData);
+                        setTotal(cartData.reduce((sum, item) => sum + (item.price * item.qty), 0));
+                        setLoading(false);
+                    })
+                    .catch(() => {
+                        setTotal(0);
+                        setCart([]);
+                        setLoading(false);
+                    });
+            } else {
+                console.log("No token found, setting empty cart and total");
+                setTotal(0);
+                setCart([]);
+                setLoading(false);
+            }
+        }
+        // Ambil user dari token jika ada (tetap seperti sebelumnya)
         const token = localStorage.getItem("token");
         if (token) {
-            // Ambil user detail dari backend pakai endpoint /api/profile
             axios.get("/api/profile", {
                 headers: { Authorization: `Bearer ${token}` },
             })
@@ -35,33 +85,207 @@ export default function CheckoutPage() {
     }, []);
 
     // Ambil ongkir dinamis jika user dan shippingMethod sudah ada
-    useEffect(() => {
-        async function fetchOngkir() {
-            if (!user || !user.kota || !user.provinsi) return;
-            setOngkir(null);
-            try {
-                const res = await axios.post("/api/ongkir", {
-                    origin: "1", // contoh id kota asal (ubah sesuai kebutuhan)
-                    destination: "2", // asumsikan user.kota adalah id kota tujuan
-                    weight: 1000, // 1kg
-                    courier: shippingMethod
-                });
-                const data = res.data.data; // <-- ambil array ongkir
-                console.log("Ongkir data cost:", data);
-                if (Array.isArray(data) && data.length > 0) {
-                    const minOngkir = data.reduce((min, curr) => curr.cost < min.cost ? curr : min, data[0]);
-                    setOngkir(minOngkir.cost);
-                } else {
-                    setOngkir(0);
-                }
-            } catch {
-                setOngkir(0);
-            }
-        }
-        fetchOngkir();
-    }, [user, shippingMethod]);
+    // useEffect(() => {
+    //     // async function resolveDestinationRegionId(user) {
+    //     //     if (!user || !user.kecamatan) return null;
 
-    const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    //     //     try {
+    //     //         const res = await axios.get(`/api/rajaongkir/destination?keyword=${user.kecamatan}`);
+
+    //     //         const data = res.data?.data;
+    //     //         if (Array.isArray(data) && data.length > 0) {
+    //     //             // Ambil yang paling relevan
+    //     //             return data[0].region_id;
+    //     //         }
+    //     //     } catch (err) {
+    //     //         console.error("Error resolving destination region_id:", err);
+    //     //     }
+
+    //     //     return null;
+    //     // }
+
+    //     async function fetchOngkir() {
+    //         if (!user || !user.kota || !user.kecamatan) return;
+
+    //         setOngkir(null);
+
+    //         try {
+    //             // const destinationId = await resolveDestinationRegionId(user);
+    //             // if (!destinationId) {
+    //             //     setOngkir(0);
+    //             //     return;
+    //             // }
+
+    //             const res = await axios.post("/api/ongkir", {
+    //                 origin: "786", // ID kota penjual
+    //                 provinsi: user.provinsi, // ID dari pencarian
+    //                 kota: user.kota, // nama atau ID kota
+    //                 kecamatan: user.kecamatan, // nama atau ID kecamatan
+    //                 weight: 1000,
+    //                 courier: shippingMethod,
+    //                 // destination kirimkan kosongan ke backend karena akan diisi di backend
+    //                 destination: null // akan diisi di backend
+    //             });
+
+    //             const data = res.data.data;
+    //             console.log("Ongkir data cost:", data);
+
+    //             if (Array.isArray(data) && data.length > 0) {
+    //                 const minOngkir = data.reduce((min, curr) =>
+    //                     curr.cost < min.cost ? curr : min, data[0]);
+    //                 setOngkir(minOngkir.cost);
+    //             } else {
+    //                 setOngkir(0);
+    //             }
+
+    //         } catch (err) {
+    //             console.error("Gagal fetch ongkir:", err);
+    //             setOngkir(0);
+    //         }
+    //     }
+
+    //     fetchOngkir();
+    // }, [user, shippingMethod]);
+
+    // skrip snap midtrans
+    useEffect(() => {
+        if (!window.snap) {
+            const script = document.createElement("script");
+            script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
+            script.setAttribute("data-client-key", "Mid-client-65HdGI2I5ScM9V8C"); // Ganti dengan client key sandbox Anda
+            script.async = true;
+            document.body.appendChild(script);
+        }
+    }, []);
+
+    const handleBayar = async () => {
+        try {
+            // Kirim data order ke backend untuk generate snapToken
+            const res = await axios.post("/api/create-transaction", {
+                cart,
+                user,
+                ongkir,
+                total: total + (ongkir || 0),
+                shippingMethod,
+                // Tambahkan data lain jika perlu
+            });
+            const { snapToken } = res.data;
+
+            // Tampilkan modal Snap
+            window.snap.pay(snapToken, {
+                onSuccess: function (result) {
+                    try {
+                        console.log("Payment success:", result);
+                        const orderData = {
+                            shippingMethod,
+                            note: note || "",
+                            userId: user?.id || null,
+                            noOrder: `ORDER-${user.id}-${Date.now()}`,
+                            ongkir: ongkir || 0,
+                            total: total + (ongkir || 0),
+                            address: user?.alamat || "",
+                            kelurahan: user?.kelurahan || "",
+                            kecamatan: user?.kecamatan || "",
+                            kota: user?.kota || "",
+                            provinsi: user?.provinsi || "",
+                            paymentMethod: null,
+                            paymentStatus: "paid",
+                            paymentTime: new Date().toISOString(),
+                            paymentId: null,
+                            snapToken: snapToken,
+                            status: "pending",
+                            items: cart.map(item => ({
+                                productId: item.productId || (item.product && item.product.id) || item.id,
+                                qty: item.qty,
+                                price: item.price || (item.product && item.product.price) || 0,
+                            })),
+                        }
+                        console.log("Order data to create:", orderData);
+                        alert("Pembayaran berhasil! Membuat order...");
+                        axios.post("/api/order", orderData)
+                            .then((response) => {
+                                console.log("Order created successfully:", response.data);
+                                localStorage.setItem("lastOrder", JSON.stringify(response.data));
+                                localStorage.removeItem("cart");
+                                // Redirect ke halaman konfirmasi atau sukses
+                                window.location.href = "/order-confirmation";
+                            })
+                            .catch((error) => {
+                                console.error("Error creating order:", error);
+                                alert("Gagal membuat order. Silakan coba lagi.");
+                            });
+                    } catch (error) {
+                        console.error("Error handling payment success:", error);
+                    }
+                },
+                onPending: function (result) {
+                    console.log("Payment pending:", result);
+                    Swal.fire({
+                        icon: "info",
+                        title: "Pembayaran Tertunda",
+                        text: "Silakan selesaikan pembayaran Anda.",
+                    })
+                    // Simpan order dengan status pending
+                    // try {
+                    //     console.log("Creating order for pending payment...");
+                    //     const orderData = {
+                    //         shippingMethod,
+                    //         note: note || "",
+                    //         userId: user?.id || null,
+                    //         total: total + (ongkir || 0),
+                    //         address: user?.alamat || "",
+                    //         kelurahan: user?.kelurahan || "",
+                    //         kecamatan: user?.kecamatan || "",
+                    //         kota: user?.kota || "",
+                    //         provinsi: user?.provinsi || "",
+                    //         paymentMethod: null,
+                    //         paymentStatus: "pending",
+                    //         paymentTime: null,
+                    //         paymentId: null,
+                    //         snapToken: snapToken,
+                    //         status: "pending",
+                    //         items: cart.map(item => ({
+                    //             productId: item.productId || (item.product && item.product.id) || item.id,
+                    //             qty: item.qty,
+                    //             price: item.price || (item.product && item.product.price) || 0,
+                    //         })),
+                    //     };
+                    //     if (!orderData) {
+                    //         alert("Gagal membuat order. Data order tidak lengkap.");
+                    //         return;
+                    //     }
+                    //     console.log("Order data for pending payment:", orderData);
+                    //     axios.post("/api/order", orderData)
+                    //         .then((response) => {
+                    //             console.log("Order created successfully for pending payment:", response.data);
+
+                    //             localStorage.setItem("lastOrder", JSON.stringify(response.data));
+
+                    //             localStorage.removeItem("cart");
+
+                    //             window.location.href = "/order-confirmation";
+                    //         })
+                    //         .catch((error) => {
+                    //             console.error("Error creating order for pending payment:", error);
+                    //             alert("Gagal membuat order. Silakan coba lagi.");
+                    //         });
+                    // } catch (err) {
+                    //     console.error("Error handling payment pending:", err);
+                    //     alert("Error di blok pending", err.message);
+                    // }
+                },
+                onError: function (result) {
+                    alert("Pembayaran gagal. Silakan coba lagi.");
+                },
+                onClose: function () {
+                    alert("Anda belum menyelesaikan pembayaran.");
+                }
+            });
+        } catch (err) {
+            alert("Gagal memproses pembayaran. Silakan coba lagi.");
+        }
+    };
+
 
     if (loading) {
         return (
@@ -135,7 +359,14 @@ export default function CheckoutPage() {
                             </select>
                         </div>
                         <div className="mb-2">
-                            <span className="font-semibold">Catatan:</span> <input type="text" className="w-full mt-1 px-3 py-2 rounded border border-green-300 dark:bg-green-900 dark:text-green-100 dark:border-green-700" placeholder="Catatan untuk penjual (opsional)" />
+                            <span className="font-semibold">Catatan:</span>
+                            <input
+                                type="text"
+                                className="w-full mt-1 px-3 py-2 rounded border border-green-300 dark:bg-green-900 dark:text-green-100 dark:border-green-700"
+                                placeholder="Catatan untuk penjual (opsional)"
+                                value={note}
+                                onChange={e => setNote(e.target.value)}
+                            />
                         </div>
                     </div>
                     {/* Ringkasan Pesanan */}
@@ -190,7 +421,10 @@ export default function CheckoutPage() {
                                 - Pilihan pickup point (jika tersedia)
                             */}
                         </div>
-                        <button className="mt-8 w-full bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition text-lg shadow-lg">
+                        <button
+                            className="mt-8 w-full bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition text-lg shadow-lg"
+                            onClick={handleBayar}
+                        >
                             Konfirmasi &amp; Bayar
                         </button>
                         <Link href="/cart" className="block mt-4 text-green-600 hover:underline text-center">Kembali ke Keranjang</Link>
