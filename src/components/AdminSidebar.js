@@ -26,6 +26,9 @@ export default function AdminSidebar() {
                     <a href="/admin/dashboard" className="flex items-center gap-3 p-3 rounded-lg hover:bg-green-100 dark:hover:bg-green-900 transition text-green-700 dark:text-green-100">
                         <FaBoxOpen /> Dashboard
                     </a>
+                    <a href="/admin/order" className="flex items-center gap-3 p-3 rounded-lg hover:bg-green-100 dark:hover:bg-green-900 transition text-green-700 dark:text-green-100">
+                        <FaBoxOpen /> Kelola Pesanan
+                    </a>
                     <a href="/admin/produk" className="flex items-center gap-3 p-3 rounded-lg hover:bg-green-100 dark:hover:bg-green-900 transition text-green-700 dark:text-green-100">
                         <FaBoxOpen /> Kelola Produk
                     </a>

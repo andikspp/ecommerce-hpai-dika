@@ -3,12 +3,24 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { useCart } from "./CartContext";
 
 function Navbar({ isLoggedIn, user, onLogout }) {
     const pathname = usePathname();
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
     const dropdownRef = useRef(null);
-    const [cartCount, setCartCount] = useState(0);
+    const { cartCount, setCartCount } = useCart();
+
+    // Handle scroll effect
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 20);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -38,7 +50,7 @@ function Navbar({ isLoggedIn, user, onLogout }) {
         } else {
             setCartCount(0);
         }
-    }, [pathname]);
+    }, [pathname, setCartCount]);
 
     // Tutup dropdown jika klik di luar
     useEffect(() => {
@@ -51,70 +63,208 @@ function Navbar({ isLoggedIn, user, onLogout }) {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    // Close mobile menu when route changes
+    useEffect(() => {
+        setMobileMenuOpen(false);
+        setDropdownOpen(false);
+    }, [pathname]);
+
+    const navLinks = [
+        { href: "/", label: "Beranda", isActive: pathname === "/" },
+        { href: "/product", label: "Produk", isActive: pathname === "/product" },
+        { href: "/about", label: "Tentang", isActive: pathname === "/about" },
+    ];
+
     return (
-        <nav className="w-full bg-green-700 dark:bg-green-900 text-white px-6 py-4 flex items-center justify-between shadow">
-            <a href="/" className="font-bold text-xl tracking-wide">Distributor HPAI Ika</a>
-            <div className="flex gap-3 items-center text-sm">
-                <a
-                    href="/cart"
-                    className="relative flex items-center hover:bg-green-800 rounded-full px-2 py-1 transition"
-                    aria-label="Keranjang"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.35 2.7A1 1 0 007.6 17h8.8a1 1 0 00.95-.7L21 13M7 13V6a1 1 0 011-1h6a1 1 0 011 1v7" />
-                    </svg>
-                    {cartCount > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
-                            {cartCount}
-                        </span>
-                    )}
-                </a>
-                <a href="/about" className="hover:bg-green-800 rounded-full px-2 py-1 transition">Tentang</a>
-                {!isLoggedIn ? (
-                    <a href="/login" className="hover:bg-green-800 rounded-full px-2 py-1 transition">Login</a>
-                ) : (
-                    <>
-                        <div className="relative" ref={dropdownRef}>
-                            <button
-                                onClick={() => setDropdownOpen((open) => !open)}
-                                className="flex items-center gap-1 font-semibold hover:bg-green-800 px-2 py-1 rounded transition"
+        <>
+            <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
+                ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg border-b border-green-100 dark:border-green-800'
+                : 'bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-800 dark:to-emerald-800'
+                }`}>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-16 lg:h-18">
+                        {/* Logo */}
+                        <div className="flex-shrink-0">
+                            <a
+                                href="/"
+                                className={`flex items-center space-x-2 font-bold text-xl lg:text-2xl tracking-wide transition-colors duration-300 ${scrolled
+                                    ? 'text-green-700 dark:text-green-300'
+                                    : 'text-white'
+                                    }`}
                             >
-                                Hi, {user?.username || "User"}
-                                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                <span className="hidden sm:block">Stokis HNI & HPAI Ika</span>
+                                <span className="sm:hidden">HPAI Ika</span>
+                            </a>
+                        </div>
+
+                        {/* Desktop Navigation */}
+                        <div className="hidden md:flex items-center space-x-1 lg:space-x-2">
+                            {navLinks.map((link) => (
+                                <a
+                                    key={link.href}
+                                    href={link.href}
+                                    className={`px-3 lg:px-4 py-2 rounded-full text-sm lg:text-base font-medium transition-all duration-200 ${link.isActive
+                                        ? scrolled
+                                            ? 'bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300'
+                                            : 'bg-white/20 text-white backdrop-blur-sm'
+                                        : scrolled
+                                            ? 'text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900 hover:text-green-700 dark:hover:text-green-300'
+                                            : 'text-white/90 hover:text-white hover:bg-white/10'
+                                        }`}
+                                >
+                                    {link.label}
+                                </a>
+                            ))}
+                        </div>
+
+                        {/* Cart & User Actions */}
+                        <div className="flex items-center space-x-2 lg:space-x-4">
+                            {/* Cart */}
+                            <a
+                                href="/cart"
+                                className={`relative p-2 lg:p-3 rounded-full transition-all duration-200 ${scrolled
+                                    ? 'text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900'
+                                    : 'text-white hover:bg-white/10'
+                                    }`}
+                                aria-label="Keranjang"
+                            >
+                                <svg className="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.35 2.7A1 1 0 007.6 17h8.8a1 1 0 00.95-.7L21 13M7 13V6a1 1 0 011-1h6a1 1 0 011 1v7" />
                                 </svg>
-                            </button>
-                            {dropdownOpen && (
-                                <div className="absolute right-0 mt-2 w-36 bg-white text-green-900 rounded shadow-lg z-50">
-                                    <a
-                                        href="/orders"
-                                        className="block px-4 py-2 hover:bg-green-100"
-                                        onClick={() => setDropdownOpen(false)}
-                                    >
-                                        Pesanan Saya
-                                    </a>
-                                    <a
-                                        href="/profile"
-                                        className="block px-4 py-2 hover:bg-green-100"
-                                        onClick={() => setDropdownOpen(false)}
-                                    >
-                                        Profil
-                                    </a>
+                                {cartCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-medium shadow-lg">
+                                        {cartCount}
+                                    </span>
+                                )}
+                            </a>
+
+                            {/* User Authentication */}
+                            {!isLoggedIn ? (
+                                <a
+                                    href="/login"
+                                    className={`px-4 lg:px-6 py-2 lg:py-2.5 rounded-full font-medium text-sm lg:text-base transition-all duration-200 ${scrolled
+                                        ? 'bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg'
+                                        : 'bg-white/10 hover:bg-white/20 text-white border border-white/30 backdrop-blur-sm'
+                                        }`}
+                                >
+                                    Masuk
+                                </a>
+                            ) : (
+                                <div className="relative" ref={dropdownRef}>
                                     <button
-                                        onClick={() => { setDropdownOpen(false); onLogout(); }}
-                                        className="w-full text-left px-4 py-2 hover:bg-green-100"
+                                        onClick={() => setDropdownOpen(!dropdownOpen)}
+                                        className={`flex items-center space-x-2 px-3 lg:px-4 py-2 lg:py-2.5 rounded-full font-medium text-sm lg:text-base transition-all duration-200 ${scrolled
+                                            ? 'text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900'
+                                            : 'text-white hover:bg-white/10'
+                                            }`}
                                     >
-                                        Logout
+                                        <div className={`w-6 h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center font-bold text-xs lg:text-sm ${scrolled
+                                            ? 'bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300'
+                                            : 'bg-white/20 text-white'
+                                            }`}>
+                                            {user?.username?.charAt(0).toUpperCase() || "U"}
+                                        </div>
+                                        <span className="hidden sm:block">{user?.username || "User"}</span>
+                                        <svg className="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
                                     </button>
+
+                                    {dropdownOpen && (
+                                        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+                                            <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                                                <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.username}</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">Selamat datang kembali!</p>
+                                            </div>
+                                            <a
+                                                href="/orders"
+                                                className="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900 transition-colors"
+                                                onClick={() => setDropdownOpen(false)}
+                                            >
+                                                <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                                </svg>
+                                                Pesanan Saya
+                                            </a>
+                                            <a
+                                                href="/profile"
+                                                className="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900 transition-colors"
+                                                onClick={() => setDropdownOpen(false)}
+                                            >
+                                                <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                </svg>
+                                                Profil
+                                            </a>
+                                            <button
+                                                onClick={() => { setDropdownOpen(false); onLogout(); }}
+                                                className="flex items-center w-full px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                                            >
+                                                <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                                </svg>
+                                                Keluar
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             )}
+
+                            {/* Mobile Menu Button */}
+                            <button
+                                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                                className={`md:hidden p-2 rounded-lg transition-colors duration-200 ${scrolled
+                                    ? 'text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900'
+                                    : 'text-white hover:bg-white/10'
+                                    }`}
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    {mobileMenuOpen ? (
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    ) : (
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                    )}
+                                </svg>
+                            </button>
                         </div>
-                    </>
+                    </div>
+                </div>
+
+                {/* Mobile Menu */}
+                {mobileMenuOpen && (
+                    <div className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg">
+                        <div className="px-4 py-4 space-y-2">
+                            {navLinks.map((link) => (
+                                <a
+                                    key={link.href}
+                                    href={link.href}
+                                    className={`block px-4 py-3 rounded-lg text-base font-medium transition-colors ${link.isActive
+                                        ? 'bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300'
+                                        : 'text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900'
+                                        }`}
+                                >
+                                    {link.label}
+                                </a>
+                            ))}
+                            {!isLoggedIn && (
+                                <a
+                                    href="/login"
+                                    className="block px-4 py-3 mt-4 bg-green-600 hover:bg-green-700 text-white rounded-lg text-base font-medium text-center transition-colors"
+                                >
+                                    Masuk
+                                </a>
+                            )}
+                        </div>
+                    </div>
                 )}
-            </div>
-        </nav>
+            </nav>
+
+            {/* Spacer to prevent content overlap */}
+            <div className="h-16 lg:h-18"></div>
+        </>
     );
 }
+
 export default function NavbarClient() {
     const pathname = usePathname();
     const hideNavbar = [
@@ -131,6 +281,7 @@ export default function NavbarClient() {
         "/admin/kategori/tambah",
         "/admin/kategori/edit",
         "/admin/produk/edit",
+        "/admin/order",
     ].includes(pathname);
 
     const [isLoggedIn, setIsLoggedIn] = useState(false);

@@ -4,159 +4,361 @@ import axios from "axios";
 
 export default function Homepage() {
   const [produk, setProduk] = useState([]);
-  const [kategori, setKategori] = useState("Semua");
-  const [kategoriList, setKategoriList] = useState(["Semua"]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProduk = async () => {
       try {
         const res = await axios.get("/api/produk");
-        // Filter hanya produk yang aktif
         const produkAktif = (res.data || []).filter((p) => p.isActive === true);
         setProduk(produkAktif);
-
-        // Ambil kategori unik dari produk aktif
-        const kategoriMap = new Map();
-        produkAktif.forEach((p) => {
-          if (p.category && !kategoriMap.has(p.category.id)) {
-            kategoriMap.set(p.category.id, p.category.name);
-          }
-        });
-        const kategoriUnik = [
-          { id: "Semua", name: "Semua" },
-          ...Array.from(kategoriMap, ([id, name]) => ({ id, name })),
-        ];
-        setKategoriList(kategoriUnik);
       } catch {
         setProduk([]);
-        setKategoriList([{ id: "Semua", name: "Semua" }]);
-      } finally {
-        setLoading(false);
       }
     };
     fetchProduk();
   }, []);
 
-  // Filter produk sesuai kategori
-  const produkTampil =
-    kategori === "Semua"
-      ? produk
-      : produk.filter((p) => String(p.category?.id) === String(kategori));
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-100 to-green-300 dark:from-green-900 dark:to-green-800 px-4 py-8">
-      <div className="max-w-5xl mx-auto">
-        {/* Filter Kategori */}
-        <section className="mb-8">
-          <div className="flex flex-col sm:flex-row items-center gap-4 justify-between">
-            <h2 className="text-2xl font-bold text-green-700 dark:text-green-100 text-center sm:text-left">
-              Produk Herbal HPAI
-            </h2>
-            <div>
-              <label className="mr-2 text-green-700 dark:text-green-100 font-semibold">
-                Kategori:
-              </label>
-              <select
-                value={kategori}
-                onChange={(e) => setKategori(e.target.value)}
-                className="px-3 py-2 rounded-lg border border-green-300 focus:border-green-600 focus:outline-none dark:bg-green-800 dark:text-green-100 dark:border-green-700"
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-gray-900 dark:via-green-900 dark:to-emerald-900">
+
+      {/* Hero Section */}
+      <section className="relative overflow-hidden bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-800 dark:to-emerald-800">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+          <div className="text-center">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
+              Selamat Datang di
+              <span className="block text-yellow-300">Stokis HNI & HPAI Ika</span>
+            </h1>
+            <p className="text-xl sm:text-2xl text-green-100 mb-8 max-w-3xl mx-auto">
+              Solusi kesehatan alami dengan produk herbal HPAI berkualitas tinggi,
+              terpercaya, dan bersertifikat halal
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a
+                href="/product"
+                className="inline-flex items-center px-8 py-4 bg-yellow-400 hover:bg-yellow-500 text-green-800 font-bold rounded-full text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
               >
-                {kategoriList.map((kat, idx) => (
-                  <option key={kat.id + "-" + idx} value={kat.id}>
-                    {kat.name}
-                  </option>
-                ))}
-              </select>
+                🛍️ Belanja Sekarang
+              </a>
+              <a
+                href="https://wa.me/6282294317043"
+                className="inline-flex items-center px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-full text-lg border-2 border-white/30 backdrop-blur-sm transition-all duration-200"
+              >
+                💬 Konsultasi Gratis
+              </a>
             </div>
           </div>
-        </section>
+        </div>
+        {/* Wave decoration */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg viewBox="0 0 1440 120" className="w-full h-20 fill-emerald-50 dark:fill-gray-900">
+            <path d="M0,64L48,69.3C96,75,192,85,288,85.3C384,85,480,75,576,69.3C672,64,768,64,864,69.3C960,75,1056,85,1152,85.3C1248,85,1344,75,1392,69.3L1440,64L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
+          </svg>
+        </div>
+      </section>
 
-        {/* Produk Section */}
-        <section id="produk">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-            {loading ? (
-              <div className="col-span-full text-center text-green-700 dark:text-green-100 py-8">
-                Memuat produk...
+      {/* About Section */}
+      <section className="py-16 lg:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden">
+            <div className="grid lg:grid-cols-2 gap-0">
+              {/* Content */}
+              <div className="p-8 lg:p-16 flex flex-col justify-center">
+                <div className="inline-flex items-center px-4 py-2 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-sm font-semibold mb-6 w-fit">
+                  ✨ Tentang Kami
+                </div>
+                <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-6">
+                  Distributor HPAI Terpercaya Sejak 2020
+                </h2>
+                <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+                  Kami berkomitmen menyediakan produk herbal HPAI original dengan kualitas terbaik.
+                  Dengan pengalaman bertahun-tahun, kami telah melayani ribuan pelanggan di seluruh Indonesia.
+                </p>
+
+                {/* Features */}
+                <div className="grid sm:grid-cols-2 gap-4 mb-8">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                      <span className="text-green-600 dark:text-green-400 text-xl">✓</span>
+                    </div>
+                    <span className="text-gray-700 dark:text-gray-300 font-medium">100% Produk Original</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                      <span className="text-green-600 dark:text-green-400 text-xl">🚚</span>
+                    </div>
+                    <span className="text-gray-700 dark:text-gray-300 font-medium">Pengiriman Cepat</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                      <span className="text-green-600 dark:text-green-400 text-xl">💬</span>
+                    </div>
+                    <span className="text-gray-700 dark:text-gray-300 font-medium">Konsultasi Gratis</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                      <span className="text-green-600 dark:text-green-400 text-xl">🏆</span>
+                    </div>
+                    <span className="text-gray-700 dark:text-gray-300 font-medium">Pelayanan Terbaik</span>
+                  </div>
+                </div>
+
+                {/* Contact Info */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">📞</span>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">WhatsApp</p>
+                      <a href="https://wa.me/6282294317043" className="text-green-600 dark:text-green-400 font-semibold hover:underline">
+                        0822-9431-7043
+                      </a>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">✉️</span>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                      <a href="mailto:agenhpai.ika@email.com" className="text-green-600 dark:text-green-400 font-semibold hover:underline">
+                        agenhpai.ika@email.com
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </div>
-            ) : produkTampil.length === 0 ? (
-              <div className="col-span-full text-center text-green-700 dark:text-green-100 py-8">
-                Tidak ada produk untuk kategori ini.
+
+              {/* Image */}
+              <div className="relative h-64 lg:h-full min-h-[400px]">
+                <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-emerald-600 opacity-20"></div>
+                <img
+                  src="/avatar-penjual.png"
+                  alt="Distributor HPAI Ika"
+                  className="w-full h-full object-cover"
+                />
+                {/* Simple overlay pattern */}
+                <div className="absolute inset-0 bg-white/5"></div>
               </div>
-            ) : (
-              produkTampil.map((produk, idx) => (
-                <div
-                  key={(produk.id ?? "produk") + "-" + idx}
-                  className="bg-white dark:bg-green-800 rounded-xl shadow-md p-4 flex flex-col items-center hover:shadow-xl transition"
-                >
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Products Preview Section */}
+      <section className="py-16 lg:py-24 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-green-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center px-4 py-2 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-sm font-semibold mb-6">
+              🌿 Produk Unggulan
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-6">
+              Temukan Produk Herbal HPAI Terbaik
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Jelajahi koleksi lengkap produk herbal HPAI yang telah terbukti berkualitas dan bermanfaat untuk kesehatan Anda
+            </p>
+          </div>
+
+          {/* Product Preview Cards */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            {produk.slice(0, 3).map((item, idx) => (
+              <div
+                key={item.id ?? idx}
+                className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 overflow-hidden"
+              >
+                <div className="relative overflow-hidden">
                   <img
                     src={
-                      produk.gambar?.startsWith("http")
-                        ? produk.gambar
-                        : `http://localhost:5000${produk.imageUrl}`
+                      item.gambar?.startsWith("http")
+                        ? item.gambar
+                        : `http://localhost:5000${item.imageUrl}`
                     }
-                    alt={produk.name}
-                    className="w-28 h-28 object-cover rounded-lg mb-3 border border-green-200 dark:border-green-700 bg-green-50"
+                    alt={item.name}
+                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
                   />
-                  <h3 className="text-lg font-semibold text-green-700 dark:text-green-100 mb-1 text-center">
-                    {produk.name}
-                  </h3>
-                  <p className="text-green-600 dark:text-green-200 text-sm mb-2 text-center">
-                    {produk.description}
-                  </p>
-                  <div className="text-green-800 dark:text-green-200 font-bold mb-3">Rp
-                    {produk.price}
+                  <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                    Unggulan
                   </div>
-                  <a
-                    href={`/product/${produk.id}`}
-                    className="mt-auto bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition"
-                  >
-                    Lihat Detail
-                  </a>
                 </div>
-              ))
-            )}
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    {item.name}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
+                    {item.description}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      Rp {item.price}
+                    </span>
+                    <a
+                      href={`/product/${item.id}`}
+                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors duration-200"
+                    >
+                      Lihat Detail
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        </section>
 
-        {/* Section Alamat Toko */}
-        <section className="mt-16">
-          <h2 className="text-2xl font-bold text-green-700 dark:text-green-100 mb-4 text-center">
-            Alamat & Kontak Distributor HPAI Ika
-          </h2>
-          <p className="text-green-700 dark:text-green-200 text-center mb-4">
-            Ingin membeli langsung? Silakan kunjungi alamat kami di bawah ini.
-          </p>
-          <div className="bg-white dark:bg-green-900 rounded-xl shadow-md p-6 flex flex-col md:flex-row items-center justify-between gap-6 max-w-3xl mx-auto">
-            <div>
-              <div className="text-green-800 dark:text-green-100 font-semibold mb-2">
-                Distributor HPAI Ika
+          {/* CTA Button */}
+          <div className="text-center">
+            <a
+              href="/product"
+              className="inline-flex items-center px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-full text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
+            >
+              🛍️ Lihat Semua Produk
+              <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Choose Us Section */}
+      <section className="py-16 lg:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-6">
+              Mengapa Memilih Kami?
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Kepercayaan pelanggan adalah prioritas utama kami
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                icon: "🏆",
+                title: "Kualitas Terjamin",
+                desc: "Semua produk telah tersertifikasi dan teruji kualitasnya"
+              },
+              {
+                icon: "⚡",
+                title: "Pengiriman Cepat",
+                desc: "Pengiriman ke seluruh Indonesia dengan jaminan aman"
+              },
+              {
+                icon: "💰",
+                title: "Harga Terbaik",
+                desc: "Dapatkan harga distributor langsung tanpa perantara"
+              },
+              {
+                icon: "🤝",
+                title: "Layanan 24/7",
+                desc: "Konsultasi dan bantuan tersedia kapan saja"
+              }
+            ].map((item, idx) => (
+              <div
+                key={idx}
+                className="text-center p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300"
+              >
+                <div className="text-4xl mb-4">{item.icon}</div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                  {item.title}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300">
+                  {item.desc}
+                </p>
               </div>
-              <div className="text-green-700 dark:text-green-200 mb-1">
-                Perumahan Grand Mutiara Nanggerang Blok C No. 23, Desa Nanggerang, Kecamatan Tajurhalang, Kabupaten Bogor, Jawa Barat
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Alamat Section */}
+      <section className="py-16 lg:py-24 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-green-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-6">
+              Alamat & Kontak
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300">
+              Ingin membeli langsung? Silakan kunjungi alamat kami di bawah ini.
+            </p>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden">
+            <div className="grid lg:grid-cols-2 gap-0">
+              <div className="p-8 lg:p-12 flex flex-col justify-center">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                  Distributor HPAI Ika
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl">📍</span>
+                    <div>
+                      <p className="text-gray-600 dark:text-gray-300">
+                        Perumahan Grand Mutiara Nanggerang Blok C No. 23, Desa Nanggerang, Kecamatan Tajurhalang, Kabupaten Bogor, Jawa Barat
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">📞</span>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">WhatsApp</p>
+                      <a href="https://wa.me/6282294317043" className="text-green-600 dark:text-green-400 font-semibold hover:underline">
+                        0822-9431-7043
+                      </a>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">✉️</span>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                      <a href="mailto:agenhpai.ika@email.com" className="text-green-600 dark:text-green-400 font-semibold hover:underline">
+                        agenhpai.ika@email.com
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="text-green-700 dark:text-green-200">
-                WhatsApp: <a href="https://wa.me/6281234567890" className="underline hover:text-green-600">0812-3456-7890</a>
+              <div className="h-64 lg:h-full min-h-[300px]">
+                <iframe
+                  title="Lokasi Toko"
+                  src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d2803.2752074654877!2d106.78018931360262!3d-6.467109011776893!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2s!5e0!3m2!1sen!2sid!4v1753701672811!5m2!1sen!2sid"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen=""
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="w-full h-full"
+                ></iframe>
               </div>
-              <div className="text-green-700 dark:text-green-200">
-                Email: <a href="mailto:agenhpai.ika@email.com" className="underline hover:text-green-600">agenhpai.ika@email.com</a>
-              </div>
-            </div>
-            <div className="w-full md:w-64 h-40 rounded-lg overflow-hidden border border-green-200 dark:border-green-700">
-              <iframe
-                title="Lokasi Toko"
-                src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d2803.2752074654877!2d106.78018931360262!3d-6.467109011776893!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2s!5e0!3m2!1sen!2sid!4v1753701672811!5m2!1sen!2sid"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen=""
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              ></iframe>
             </div>
           </div>
-        </section>
-      </div >
-    </div >
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 lg:py-24 bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-800 dark:to-emerald-800">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">
+            Siap Memulai Hidup Sehat dengan HPAI?
+          </h2>
+          <p className="text-xl text-green-100 mb-8">
+            Bergabunglah dengan ribuan pelanggan yang telah merasakan manfaat produk herbal HPAI
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="/product"
+              className="inline-flex items-center px-8 py-4 bg-white text-green-600 font-bold rounded-full text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
+            >
+              🛒 Mulai Belanja
+            </a>
+            <a
+              href="https://wa.me/6282294317043"
+              className="inline-flex items-center px-8 py-4 bg-transparent border-2 border-white text-white font-bold rounded-full text-lg hover:bg-white hover:text-green-600 transition-all duration-200"
+            >
+              💬 Hubungi Kami
+            </a>
+          </div>
+        </div>
+      </section>
+    </div>
   );
 }
