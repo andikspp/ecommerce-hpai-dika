@@ -282,6 +282,7 @@ export default function NavbarClient() {
         "/admin/kategori/edit",
         "/admin/produk/edit",
         "/admin/order",
+        "/admin/produk/detail",
     ].includes(pathname);
 
     const [isLoggedIn, setIsLoggedIn] = useState(false);

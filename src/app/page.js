@@ -131,7 +131,7 @@ export default function Homepage() {
               <div className="relative h-64 lg:h-full min-h-[400px]">
                 <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-emerald-600 opacity-20"></div>
                 <img
-                  src="/avatar-penjual.png"
+                  src="/foto adek.jpg"
                   alt="Distributor HPAI Ika"
                   className="w-full h-full object-cover"
                 />
@@ -332,10 +332,10 @@ export default function Homepage() {
             </div>
           </div>
         </div>
-      </section>
+      </section >
 
       {/* CTA Section */}
-      <section className="py-16 lg:py-24 bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-800 dark:to-emerald-800">
+      < section className="py-16 lg:py-24 bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-800 dark:to-emerald-800" >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">
             Siap Memulai Hidup Sehat dengan HPAI?
@@ -358,7 +358,7 @@ export default function Homepage() {
             </a>
           </div>
         </div>
-      </section>
-    </div>
+      </section >
+    </div >
   );
 }

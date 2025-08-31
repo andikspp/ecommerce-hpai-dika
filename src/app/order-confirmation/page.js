@@ -3,21 +3,62 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 export default function OrderConfirmationPage() {
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
     const searchParams = useSearchParams();
     const orderId = searchParams.get("id");
+    const [finishing, setFinishing] = useState(false);
+    const [ratings, setRatings] = useState({});
+    const [reviews, setReviews] = useState({});
+    const [submittingReview, setSubmittingReview] = useState({});
+    const [userId, setUserId] = useState(null);
+    const [reviewedProducts, setReviewedProducts] = useState(new Set());
+    const [existingReviews, setExistingReviews] = useState([]);
 
     useEffect(() => {
-        const fetchOrder = async () => {
+        const fetchOrderAndReviews = async () => {
             if (orderId) {
                 try {
-                    const res = await axios.get(`/api/order?id=${orderId}`);
-                    if (res.data) setOrder(res.data);
-                    console.log("Order fetched successfully:", res.data);
+                    // Fetch order data
+                    const orderRes = await axios.get(`/api/order?id=${orderId}`);
+                    if (orderRes.data) {
+                        setOrder(orderRes.data);
+                        setUserId(orderRes.data.userId);
+
+                        // Initialize ratings dan reviews untuk setiap item
+                        const initialRatings = {};
+                        const initialReviews = {};
+                        orderRes.data.items?.forEach(item => {
+                            initialRatings[item.product.id] = 0;
+                            initialReviews[item.product.id] = '';
+                        });
+                        setRatings(initialRatings);
+                        setReviews(initialReviews);
+
+                        // Fetch existing reviews untuk order ini
+                        try {
+                            const reviewsRes = await axios.get(`/api/review/order?orderId=${orderId}`);
+                            if (reviewsRes.data && reviewsRes.data.success) {
+                                const reviewsData = reviewsRes.data.reviews;
+                                setExistingReviews(reviewsData); // Simpan data review lengkap
+
+                                const reviewedProductIds = new Set(reviewsData.map(review => review.productId));
+                                setReviewedProducts(reviewedProductIds);
+
+                                console.log("Existing reviews found:", reviewsData);
+                                console.log("Reviewed product IDs:", Array.from(reviewedProductIds));
+                            }
+                        } catch (reviewError) {
+                            console.log("No existing reviews found or error fetching reviews:", reviewError);
+                            setExistingReviews([]); // Set empty array jika tidak ada review
+                        }
+                    }
+                    console.log("Order fetched successfully:", orderRes.data);
                 } catch (err) {
+                    console.error("Error fetching order:", err);
                     setOrder(null);
                 }
             } else {
@@ -26,8 +67,270 @@ export default function OrderConfirmationPage() {
             }
             setLoading(false);
         };
-        fetchOrder();
+
+        fetchOrderAndReviews();
     }, [orderId]);
+
+    const handleSetRating = (productId, rating) => {
+        setRatings(prev => ({
+            ...prev,
+            [productId]: rating
+        }));
+    };
+
+    const handleSetReview = (productId, review) => {
+        setReviews(prev => ({
+            ...prev,
+            [productId]: review
+        }));
+    };
+
+    const handleSubmitReview = async (item) => {
+        const productId = item.product.id;
+        const rating = ratings[productId];
+        const review = reviews[productId];
+
+        if (!rating || rating === 0) {
+            await Swal.fire({
+                icon: 'warning',
+                title: 'Rating Diperlukan',
+                text: 'Silakan beri rating sebelum mengirim ulasan.',
+                confirmButtonColor: '#10B981'
+            });
+            return;
+        }
+
+        if (!review || review.trim() === '') {
+            await Swal.fire({
+                icon: 'warning',
+                title: 'Ulasan Diperlukan',
+                text: 'Silakan tulis ulasan sebelum mengirim.',
+                confirmButtonColor: '#10B981'
+            });
+            return;
+        }
+
+        setSubmittingReview(prev => ({ ...prev, [productId]: true }));
+
+        try {
+            const res = await axios.post('/api/review', {
+                orderId: order.id,
+                productId: productId,
+                rating: rating,
+                review: review,
+                userId: userId
+            });
+
+            if (res.data && res.data.success) {
+                // Update set reviewedProducts
+                setReviewedProducts(prev => new Set([...prev, productId]));
+
+                // Tambahkan review baru ke existingReviews state
+                const newReview = {
+                    id: res.data.review?.id || Date.now(), // Gunakan ID dari response atau timestamp
+                    productId: productId,
+                    orderId: order.id,
+                    userId: userId,
+                    rating: rating,
+                    review: review,
+                    createdAt: new Date().toISOString(), // Gunakan timestamp saat ini
+                    // Tambahan field lain jika diperlukan
+                    user: {
+                        name: res.data.review?.user?.name || 'Anda'
+                    },
+                    product: {
+                        name: item.product.name
+                    }
+                };
+
+                // Update existingReviews dengan review baru
+                setExistingReviews(prev => [...prev, newReview]);
+
+                // Reset form untuk item ini
+                setRatings(prev => ({ ...prev, [productId]: 0 }));
+                setReviews(prev => ({ ...prev, [productId]: '' }));
+
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Terima kasih atas ulasan Anda! 🌟',
+                    html: `
+                    <div class="text-center">
+                        <div class="text-5xl mb-4">${'⭐'.repeat(rating)}</div>
+                        <p class="text-lg text-gray-700 mb-2">
+                            Ulasan untuk <strong>${item.product.name}</strong> berhasil dikirim!
+                        </p>
+                        <p class="text-sm text-gray-500">
+                            Ulasan Anda sangat membantu pembeli lain
+                        </p>
+                    </div>
+                `,
+                    confirmButtonText: 'Oke, Terima Kasih!',
+                    confirmButtonColor: '#10B981',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            } else {
+                throw new Error(res.data?.message || "Gagal mengirim ulasan");
+            }
+        } catch (error) {
+            console.error("Error submitting review:", error);
+
+            // Handle error untuk produk yang sudah direview
+            if (error?.response?.data?.message?.includes('sudah memberikan ulasan')) {
+                setReviewedProducts(prev => new Set([...prev, productId]));
+
+                // Jika sudah ada review sebelumnya, fetch ulang data review untuk update tampilan
+                try {
+                    const reviewsRes = await axios.get(`/api/review/order?orderId=${order.id}`);
+                    if (reviewsRes.data && reviewsRes.data.success) {
+                        const reviewsData = reviewsRes.data.reviews;
+                        setExistingReviews(reviewsData);
+
+                        const reviewedProductIds = new Set(reviewsData.map(review => review.productId));
+                        setReviewedProducts(reviewedProductIds);
+                    }
+                } catch (fetchError) {
+                    console.error("Error fetching updated reviews:", fetchError);
+                }
+
+                await Swal.fire({
+                    icon: 'info',
+                    title: 'Produk Sudah Diulas',
+                    text: 'Anda sudah memberikan ulasan untuk produk ini sebelumnya.',
+                    confirmButtonColor: '#10B981'
+                });
+            } else {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal Mengirim Ulasan',
+                    text: error?.response?.data?.message || error.message || 'Terjadi kesalahan, silakan coba lagi.',
+                    confirmButtonColor: '#EF4444'
+                });
+            }
+        } finally {
+            setSubmittingReview(prev => ({ ...prev, [productId]: false }));
+        }
+    };
+
+    const handleFinishOrder = async () => {
+        if (!order) return;
+        setFinishing(true);
+
+        try {
+            // PATCH ke /api/order?id=order.id
+            const res = await axios.patch(`/api/order?id=${order.id}`, {
+                status: "delivered"
+            });
+
+            if (res.data) {
+                setOrder({ ...order, status: "delivered" });
+
+                // Modern notification dengan SweetAlert2
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Pesanan Selesai! 🎉',
+                    html: `
+                    <div class="text-center">
+                        <div class="text-6xl mb-4">📦</div>
+                        <p class="text-lg text-gray-600 mb-2">
+                            Terima kasih telah mengonfirmasi pesanan!
+                        </p>
+                        <p class="text-sm text-gray-500">
+                            Pesanan <strong>#${order.noOrder || order.orderId || order.id}</strong> 
+                            telah diselesaikan
+                        </p>
+                        <div class="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                            <p class="text-green-700 text-sm">
+                                🌟 Sekarang Anda bisa memberikan rating dan ulasan untuk produk yang dibeli!
+                            </p>
+                        </div>
+                    </div>
+                `,
+                    confirmButtonText: 'Oke, Terima Kasih!',
+                    confirmButtonColor: '#10B981',
+                    background: '#ffffff',
+                    backdrop: `
+                    rgba(16, 185, 129, 0.1)
+                    url("data:image/svg+xml,%3csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3e%3cg fill='none' fill-rule='evenodd'%3e%3cg fill='%2310B981' fill-opacity='0.1'%3e%3ccircle cx='30' cy='30' r='4'/%3e%3c/g%3e%3c/g%3e%3c/svg%3e")
+                    left top
+                    repeat
+                `,
+                    showClass: {
+                        popup: 'animate__animated animate__bounceIn'
+                    },
+                    hideClass: {
+                        popup: 'animate__animated animate__bounceOut'
+                    },
+                    timer: 5000,
+                    timerProgressBar: true,
+                    allowOutsideClick: false,
+                    customClass: {
+                        popup: 'rounded-3xl shadow-2xl',
+                        title: 'text-2xl font-bold text-gray-800',
+                        confirmButton: 'px-8 py-3 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5'
+                    }
+                });
+
+                // Optional: Auto redirect after notification
+                setTimeout(() => {
+                    // Uncomment jika ingin auto redirect
+                    // window.location.href = '/orders';
+                }, 1000);
+            }
+        } catch (error) {
+            console.error("Error finishing order:", error);
+
+            // Modern error notification
+            await Swal.fire({
+                icon: 'error',
+                title: 'Oops! Ada Kesalahan 😔',
+                html: `
+                <div class="text-center">
+                    <div class="text-6xl mb-4">⚠️</div>
+                    <p class="text-lg text-gray-600 mb-2">
+                        Gagal menyelesaikan pesanan
+                    </p>
+                    <p class="text-sm text-gray-500 mb-4">
+                        Silakan coba lagi dalam beberapa saat
+                    </p>
+                    <div class="p-3 bg-red-50 rounded-lg border border-red-200">
+                        <p class="text-red-700 text-sm">
+                            💡 Jika masalah berlanjut, hubungi customer service
+                        </p>
+                    </div>
+                </div>
+            `,
+                confirmButtonText: 'Coba Lagi',
+                confirmButtonColor: '#EF4444',
+                showCancelButton: true,
+                cancelButtonText: 'Hubungi CS',
+                cancelButtonColor: '#6B7280',
+                background: '#ffffff',
+                backdrop: `
+                rgba(239, 68, 68, 0.1)
+                url("data:image/svg+xml,%3csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3e%3cg fill='none' fill-rule='evenodd'%3e%3cg fill='%23EF4444' fill-opacity='0.1'%3e%3ccircle cx='30' cy='30' r='4'/%3e%3c/g%3e%3c/g%3e%3c/svg%3e")
+                left top
+                repeat
+            `,
+                showClass: {
+                    popup: 'animate__animated animate__shakeX'
+                },
+                customClass: {
+                    popup: 'rounded-3xl shadow-2xl',
+                    title: 'text-2xl font-bold text-gray-800',
+                    confirmButton: 'px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 mr-2',
+                    cancelButton: 'px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5'
+                }
+            }).then((result) => {
+                if (result.dismiss === Swal.DismissReason.cancel) {
+                    // Redirect ke WhatsApp CS
+                    window.open('https://wa.me/6282294317043?text=Halo,%20saya%20mengalami%20masalah%20dengan%20pesanan%20saya', '_blank');
+                }
+            });
+        } finally {
+            setFinishing(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -347,8 +650,157 @@ export default function OrderConfirmationPage() {
                     )}
                 </div>
 
+                {/* Rating & Review Section - Hanya tampil jika pesanan delivered */}
+                {order.status === "delivered" && order.items?.length > 0 && (
+                    <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden mb-8">
+                        <div className="bg-gradient-to-r from-yellow-500 to-orange-500 px-8 py-6">
+                            <div className="flex items-center gap-4 text-white">
+                                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-bold">Beri Rating & Ulasan</h3>
+                                    <p className="text-yellow-100 text-sm">Bagikan pengalaman Anda dengan produk yang dibeli</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="p-8">
+                            <div className="space-y-8">
+                                {order.items.map((item) => {
+                                    const isReviewed = reviewedProducts.has(item.product.id);
+                                    // Cari review untuk produk ini dari data yang sudah di-fetch
+                                    const existingReview = existingReviews?.find(
+                                        (review) => review.productId === item.product.id
+                                    );
+
+                                    return (
+                                        <div
+                                            key={item.product.id}
+                                            className="bg-gray-50 dark:bg-gray-700 rounded-2xl p-6 border border-gray-200 dark:border-gray-600"
+                                        >
+                                            <div className="flex items-start gap-4 mb-4">
+                                                <div className="w-16 h-16 bg-gray-200 dark:bg-gray-600 rounded-lg flex items-center justify-center text-2xl">
+                                                    📦
+                                                </div>
+                                                <div className="flex-1">
+                                                    <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+                                                        {item.product.name}
+                                                    </h4>
+                                                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                                                        Quantity: {item.qty} • Harga: Rp {(item.price * item.qty).toLocaleString("id-ID")}
+                                                    </p>
+                                                </div>
+                                                {isReviewed && (
+                                                    <div className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-3 py-1 rounded-full text-xs font-semibold">
+                                                        ✓ Sudah Diulas
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {!isReviewed ? (
+                                                <div>
+                                                    {/* Rating Stars */}
+                                                    <div className="mb-4">
+                                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                            Rating Produk
+                                                        </label>
+                                                        <div className="flex gap-1">
+                                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                                <button
+                                                                    key={star}
+                                                                    type="button"
+                                                                    onClick={() => handleSetRating(item.product.id, star)}
+                                                                    className={`text-3xl transition-all duration-200 hover:scale-110 ${ratings[item.product.id] >= star
+                                                                        ? "text-yellow-400"
+                                                                        : "text-gray-300 hover:text-yellow-300"
+                                                                        }`}
+                                                                >
+                                                                    ★
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                        {ratings[item.product.id] > 0 && (
+                                                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                                {ratings[item.product.id]} dari 5 bintang
+                                                            </p>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Review Text */}
+                                                    <div className="mb-4">
+                                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                            Ulasan Anda
+                                                        </label>
+                                                        <textarea
+                                                            className="w-full rounded-lg border-gray-300 dark:bg-gray-600 dark:border-gray-500 dark:text-white p-3 min-h-[100px] resize-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                                                            rows={4}
+                                                            placeholder="Ceritakan pengalaman Anda menggunakan produk ini..."
+                                                            value={reviews[item.product.id] || ""}
+                                                            onChange={(e) => handleSetReview(item.product.id, e.target.value)}
+                                                        />
+                                                    </div>
+
+                                                    {/* Submit Button */}
+                                                    <button
+                                                        onClick={() => handleSubmitReview(item)}
+                                                        disabled={submittingReview[item.product.id]}
+                                                        className="inline-flex items-center px-6 py-3 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 disabled:transform-none"
+                                                    >
+                                                        {submittingReview[item.product.id] ? (
+                                                            <>
+                                                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                                </svg>
+                                                                Mengirim...
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                                                </svg>
+                                                                Kirim Ulasan
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="text-center py-8">
+                                                    {/* Tampilkan rating dari database */}
+                                                    <div className="text-5xl mb-4">
+                                                        {existingReview?.rating ? "⭐".repeat(existingReview.rating) : "⭐⭐⭐⭐⭐"}
+                                                    </div>
+                                                    <p className="text-gray-600 dark:text-gray-400 text-lg font-medium">
+                                                        Terima kasih atas ulasan Anda!
+                                                    </p>
+                                                    <p className="text-gray-500 dark:text-gray-500 text-sm mt-2">
+                                                        Ulasan Anda membantu pembeli lain membuat keputusan yang tepat
+                                                    </p>
+                                                    {/* Tampilkan review text dari database */}
+                                                    {existingReview?.review && (
+                                                        <div className="mt-4 bg-gray-100 dark:bg-gray-600 rounded-lg p-4">
+                                                            <p className="text-sm text-gray-700 dark:text-gray-300 italic">
+                                                                "{existingReview.review}"
+                                                            </p>
+                                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                                                Ditulis pada {new Date(existingReview.createdAt).toLocaleDateString("id-ID")}
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
                     <Link
                         href="/"
                         className="inline-flex items-center justify-center px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
@@ -378,41 +830,32 @@ export default function OrderConfirmationPage() {
                         </svg>
                         Belanja Lagi
                     </Link>
-                </div>
 
-                {/* Help Section */}
-                <div className="mt-12 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-2xl p-6 text-center">
-                    <div className="flex items-center justify-center gap-3 mb-4">
-                        <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <h3 className="text-lg font-bold text-blue-800 dark:text-blue-200">Butuh Bantuan?</h3>
-                    </div>
-                    <p className="text-blue-600 dark:text-blue-300 mb-4">
-                        Tim customer service kami siap membantu Anda 24/7
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                        <a
-                            href="https://wa.me/6282294317043"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg transition-colors duration-200"
+                    {/* Button Selesaikan Pesanan - hanya muncul jika status shipped */}
+                    {order.paymentStatus === "paid" && order.status === "shipped" && (
+                        <button
+                            onClick={handleFinishOrder}
+                            disabled={finishing}
+                            className="inline-flex items-center justify-center px-8 py-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 disabled:transform-none"
                         >
-                            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.148z" />
-                            </svg>
-                            WhatsApp
-                        </a>
-                        <a
-                            href="mailto:support@hpai.com"
-                            className="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors duration-200"
-                        >
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                            </svg>
-                            Email
-                        </a>
-                    </div>
+                            {finishing ? (
+                                <>
+                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Memproses...
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Pesanan Sudah Sampai
+                                </>
+                            )}
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

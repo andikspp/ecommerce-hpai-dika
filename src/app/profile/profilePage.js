@@ -258,29 +258,6 @@ export default function ProfilePage() {
                             </div>
                         </div>
 
-                        {/* Account Stats */}
-                        <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
-                            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-6">Statistik Akun</h3>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                <div className="text-center p-4 bg-green-50 dark:bg-green-900/30 rounded-xl">
-                                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">100%</div>
-                                    <div className="text-sm text-gray-600 dark:text-gray-400">Kepuasan</div>
-                                </div>
-                                <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/30 rounded-xl">
-                                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">0</div>
-                                    <div className="text-sm text-gray-600 dark:text-gray-400">Total Pesanan</div>
-                                </div>
-                                <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/30 rounded-xl">
-                                    <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">2024</div>
-                                    <div className="text-sm text-gray-600 dark:text-gray-400">Bergabung</div>
-                                </div>
-                                <div className="text-center p-4 bg-orange-50 dark:bg-orange-900/30 rounded-xl">
-                                    <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{completion}%</div>
-                                    <div className="text-sm text-gray-600 dark:text-gray-400">Profil Lengkap</div>
-                                </div>
-                            </div>
-                        </div>
-
                         {/* Edit Profile Button */}
                         <div className="mt-8 text-center">
                             <a

@@ -38,17 +38,17 @@ export default function AboutPage() {
                         <div className="p-8 lg:p-12">
                             <div className="mb-6">
                                 <span className="inline-block px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-sm font-semibold">
-                                    Cerita Kami
+                                    Tentang
                                 </span>
                             </div>
                             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-6">
                                 Stokis HNI & HPAI Ika
                             </h2>
                             <p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed mb-6">
-                                Kami adalah distributor herbal terpercaya yang telah berpengalaman bertahun-tahun dalam menyediakan produk-produk HPAI berkualitas tinggi. Dengan dedikasi penuh, kami melayani kebutuhan kesehatan Anda dengan produk herbal yang aman, alami, dan efektif.
+                                Saya adalah salah satu stokis produk HPAI terpercaya yang telah berpengalaman bertahun-tahun dalam menjual produk-produk HPAI berkualitas tinggi. Dengan dedikasi penuh, saya melayani kebutuhan kesehatan Anda dengan produk herbal yang aman, alami, dan efektif.
                             </p>
                             <p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed">
-                                Kepercayaan dan kepuasan pelanggan adalah prioritas utama kami. Setiap produk yang kami jual telah melalui standar kualitas yang ketat untuk memastikan Anda mendapatkan manfaat terbaik untuk kesehatan.
+                                Kepercayaan dan kepuasan pelanggan adalah prioritas utama saya. Setiap produk yang saya jual telah melalui standar kualitas untuk memastikan Anda mendapatkan manfaat terbaik untuk kesehatan.
                             </p>
                         </div>
                         <div className="bg-gradient-to-br from-green-400 to-emerald-500 p-8 lg:p-12 flex items-center justify-center">
@@ -60,7 +60,7 @@ export default function AboutPage() {
                                 </div>
                                 <h3 className="text-2xl font-bold mb-4">Melayani dengan Hati</h3>
                                 <p className="text-green-100">
-                                    Komitmen kami adalah memberikan pelayanan terbaik untuk kesehatan dan kesejahteraan Anda
+                                    Komitmen saya adalah memberikan pelayanan terbaik dalam memenuhi kebutuhan anda mengenai produk herbal HPAI.
                                 </p>
                             </div>
                         </div>
@@ -74,7 +74,7 @@ export default function AboutPage() {
                         <div className="text-gray-600 dark:text-gray-400 text-sm">Tahun Pengalaman</div>
                     </div>
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 text-center">
-                        <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">100+</div>
+                        <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">50+</div>
                         <div className="text-gray-600 dark:text-gray-400 text-sm">Produk Herbal</div>
                     </div>
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 text-center">
@@ -101,14 +101,14 @@ export default function AboutPage() {
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 className="text-2xl font-bold">Visi Kami</h3>
-                                    <p className="text-blue-100 text-sm">Pandangan masa depan kami</p>
+                                    <h3 className="text-2xl font-bold">Visi</h3>
+                                    <p className="text-blue-100 text-sm">Pandangan masa depan</p>
                                 </div>
                             </div>
                         </div>
                         <div className="p-8">
                             <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
-                                Menjadi distributor herbal terdepan yang menyediakan produk berkualitas tinggi untuk meningkatkan kesehatan dan kualitas hidup masyarakat Indonesia secara berkelanjutan.
+                                Menjadi salah satu stokis HPAI terdepan yang menyediakan produk HPAI berkualitas tinggi untuk meningkatkan kesehatan dan kualitas hidup konsumen secara berkelanjutan.
                             </p>
                         </div>
                     </div>
@@ -123,8 +123,8 @@ export default function AboutPage() {
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 className="text-2xl font-bold">Misi Kami</h3>
-                                    <p className="text-purple-100 text-sm">Langkah strategis kami</p>
+                                    <h3 className="text-2xl font-bold">Misi</h3>
+                                    <p className="text-purple-100 text-sm">Langkah strategis</p>
                                 </div>
                             </div>
                         </div>
@@ -136,7 +136,7 @@ export default function AboutPage() {
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                         </svg>
                                     </div>
-                                    <span className="text-gray-700 dark:text-gray-300">Menyediakan produk herbal yang aman, berkualitas, dan terjangkau</span>
+                                    <span className="text-gray-700 dark:text-gray-300">Menyediakan produk herbal HPAI yang aman, berkualitas, dan terjangkau</span>
                                 </li>
                                 <li className="flex items-start gap-3">
                                     <div className="w-6 h-6 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -171,7 +171,7 @@ export default function AboutPage() {
                 <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden mb-16">
                     <div className="bg-gradient-to-r from-green-500 to-emerald-500 px-8 py-6">
                         <div className="text-center text-white">
-                            <h3 className="text-3xl font-bold mb-2">Nilai-Nilai Kami</h3>
+                            <h3 className="text-3xl font-bold mb-2">Nilai-Nilai</h3>
                             <p className="text-green-100">Prinsip yang memandu setiap langkah kami</p>
                         </div>
                     </div>
@@ -185,7 +185,7 @@ export default function AboutPage() {
                                 </div>
                                 <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Terpercaya</h4>
                                 <p className="text-gray-600 dark:text-gray-400">
-                                    Kami membangun kepercayaan melalui transparansi dan konsistensi dalam setiap pelayanan
+                                    Saya membangun kepercayaan melalui transparansi dan konsistensi dalam setiap pelayanan
                                 </p>
                             </div>
                             <div className="text-center">
@@ -196,7 +196,7 @@ export default function AboutPage() {
                                 </div>
                                 <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Peduli</h4>
                                 <p className="text-gray-600 dark:text-gray-400">
-                                    Kepedulian terhadap kesehatan dan kesejahteraan pelanggan adalah prioritas utama kami
+                                    Kepedulian terhadap kesehatan dan kesejahteraan pelanggan adalah prioritas utama saya
                                 </p>
                             </div>
                             <div className="text-center">
@@ -205,9 +205,9 @@ export default function AboutPage() {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                                     </svg>
                                 </div>
-                                <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Inovatif</h4>
+                                <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Responsif</h4>
                                 <p className="text-gray-600 dark:text-gray-400">
-                                    Terus berinovasi dalam memberikan solusi kesehatan terbaik dengan teknologi modern
+                                    Selalu siap melayani kebutuhan pelanggan dengan cepat, ramah, dan profesional demi kepuasan Anda.
                                 </p>
                             </div>
                         </div>

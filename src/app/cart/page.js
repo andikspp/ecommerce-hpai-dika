@@ -8,6 +8,7 @@ import { useCart } from "../CartContext";
 export default function CartPage() {
     const [cart, setCart] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [productStock, setProductStock] = useState({});
     const { setCartCount } = useCart();
 
     useEffect(() => {
@@ -44,10 +45,31 @@ export default function CartPage() {
             } else {
                 setCart(localCart);
             }
+            await fetchProductStocks(localCart);
             setLoading(false);
         };
         fetchCart();
     }, []);
+
+    // Fungsi untuk mengambil stok produk
+    const fetchProductStocks = async (cartItems) => {
+        try {
+            const stockData = {};
+            for (const item of cartItems) {
+                const productId = item.productId || item.id;
+                try {
+                    const response = await axios.get(`/api/produk/${productId}`);
+                    stockData[productId] = response.data.stock || 0;
+                } catch (error) {
+                    console.error(`Error fetching stock for product ${productId}:`, error);
+                    stockData[productId] = 0;
+                }
+            }
+            setProductStock(stockData);
+        } catch (error) {
+            console.error("Error fetching product stocks:", error);
+        }
+    };
 
     const total = cart.reduce((sum, item) => {
         const product = item.product || item;
@@ -104,6 +126,24 @@ export default function CartPage() {
 
     const handleQtyChange = (id, qty) => {
         if (qty < 1) return;
+
+        // Validasi stok
+        const productId = cart.find(item => item.id === id)?.productId || id;
+        const availableStock = productStock[productId] || 0;
+
+        if (qty > availableStock) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Stok Tidak Mencukupi',
+                text: `Stok tersedia hanya ${availableStock} unit. Jumlah akan disesuaikan dengan stok yang tersedia.`,
+                confirmButtonText: 'OK',
+                customClass: {
+                    popup: 'rounded-2xl'
+                }
+            });
+            qty = availableStock;
+        }
+
         const newCart = cart.map((item) =>
             item.id === id ? { ...item, qty } : item
         );
@@ -115,6 +155,37 @@ export default function CartPage() {
     };
 
     const handleCheckout = () => {
+        // Validasi stok sebelum checkout
+        const invalidItems = cart.filter(item => {
+            const productId = item.productId || item.id;
+            const availableStock = productStock[productId] || 0;
+            return item.qty > availableStock;
+        });
+
+        if (invalidItems.length > 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Stok Tidak Mencukupi',
+                html: `
+                    <p>Beberapa produk memiliki stok yang tidak mencukupi:</p>
+                    <ul class="text-left mt-2">
+                        ${invalidItems.map(item => {
+                    const product = item.product || item;
+                    const productId = item.productId || item.id;
+                    const availableStock = productStock[productId] || 0;
+                    return `<li>• ${product.name}: Diminta ${item.qty}, Tersedia ${availableStock}</li>`;
+                }).join('')}
+                    </ul>
+                    <p class="mt-2">Silakan sesuaikan jumlah produk sebelum melanjutkan.</p>
+                `,
+                confirmButtonText: 'OK',
+                customClass: {
+                    popup: 'rounded-2xl'
+                }
+            });
+            return;
+        }
+
         const token = localStorage.getItem("token");
         if (!token) {
             Swal.fire({
@@ -125,7 +196,10 @@ export default function CartPage() {
                 showCancelButton: true,
                 cancelButtonText: 'Batal',
                 confirmButtonColor: '#16a34a',
-                cancelButtonColor: '#6b7280'
+                cancelButtonColor: '#6b7280',
+                customClass: {
+                    popup: 'rounded-2xl'
+                }
             }).then((result) => {
                 if (result.isConfirmed) {
                     window.location.href = "/login";
@@ -217,7 +291,6 @@ export default function CartPage() {
                     </div>
                 ) : (
                     <div className="grid lg:grid-cols-3 gap-8">
-
                         {/* Cart Items */}
                         <div className="lg:col-span-2">
                             <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg overflow-hidden">
@@ -230,11 +303,15 @@ export default function CartPage() {
                                 <div className="divide-y divide-gray-200 dark:divide-gray-700">
                                     {cart.map((item) => {
                                         const product = item.product || item;
+                                        const productId = item.productId || item.id;
+                                        const availableStock = productStock[productId] || 0;
+
                                         return (
                                             <CartItem
                                                 key={item.id}
                                                 item={item}
                                                 product={product}
+                                                availableStock={availableStock}
                                                 onQtyChange={handleQtyChange}
                                                 onRemove={handleRemove}
                                             />

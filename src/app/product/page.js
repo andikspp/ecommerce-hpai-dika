@@ -62,8 +62,37 @@ export default function ProdukPage() {
 
     // Handle add to cart
     const handleAddToCart = (produkItem, qty = 1) => {
+        // Check if product has stock
+        if (!produkItem.stock || produkItem.stock === 0) {
+            setNotification(`Maaf, ${produkItem.name} sedang habis stok!`);
+            setTimeout(() => setNotification(""), 3000);
+            return;
+        }
+
+        // Check if requested quantity exceeds available stock
+        if (qty > produkItem.stock) {
+            setNotification(`Maaf, stok ${produkItem.name} hanya tersedia ${produkItem.stock} unit!`);
+            setTimeout(() => setNotification(""), 3000);
+            return;
+        }
+
         const cart = JSON.parse(localStorage.getItem("cart") || "[]");
         const existing = cart.find((item) => item.id === produkItem.id);
+
+        // Check if adding to existing cart item would exceed stock
+        const currentCartQty = existing ? existing.qty : 0;
+        const totalQty = currentCartQty + qty;
+
+        if (totalQty > produkItem.stock) {
+            const availableToAdd = produkItem.stock - currentCartQty;
+            if (availableToAdd > 0) {
+                setNotification(`Hanya bisa menambah ${availableToAdd} unit lagi. Stok tersisa: ${produkItem.stock}`);
+            } else {
+                setNotification(`${produkItem.name} sudah mencapai batas maksimum di keranjang!`);
+            }
+            setTimeout(() => setNotification(""), 3000);
+            return;
+        }
 
         if (existing) {
             existing.qty += qty;
@@ -75,17 +104,19 @@ export default function ProdukPage() {
                 qty: qty,
                 gambar: produkItem.gambar,
                 imageUrl: produkItem.imageUrl,
+                stock: produkItem.stock, // Add stock info to cart item
             });
         }
 
         localStorage.setItem("cart", JSON.stringify(cart));
 
         // Update cart count di context
-        const totalQty = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
-        setCartCount(totalQty);
+        const totalCartQty = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
+        setCartCount(totalCartQty);
 
-        // Show notification
-        setNotification(`${produkItem.name} ditambahkan ke keranjang!`);
+        // Show success notification with stock info
+        const remainingStock = produkItem.stock - totalQty;
+        setNotification(`${produkItem.name} ditambahkan ke keranjang! (Sisa stok: ${remainingStock})`);
         setTimeout(() => setNotification(""), 3000);
     };
 
@@ -249,7 +280,12 @@ function ProductCard({ produk, viewMode, onAddToCart }) {
     const [qty, setQty] = useState(1);
     const [showQtyInput, setShowQtyInput] = useState(false);
 
+    // Check if product is out of stock
+    const isOutOfStock = !produk.stock || produk.stock === 0;
+    const isLowStock = produk.stock && produk.stock <= 5 && produk.stock > 0;
+
     const handleQuickAdd = () => {
+        if (isOutOfStock) return;
         onAddToCart(produk, qty);
         setShowQtyInput(false);
         setQty(1);
@@ -257,7 +293,7 @@ function ProductCard({ produk, viewMode, onAddToCart }) {
 
     if (viewMode === "list") {
         return (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
+            <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden ${isOutOfStock ? 'opacity-75' : ''}`}>
                 <div className="flex flex-col md:flex-row">
                     <div className="md:w-48 h-48 md:h-auto relative overflow-hidden">
                         <img
@@ -267,17 +303,40 @@ function ProductCard({ produk, viewMode, onAddToCart }) {
                                     : `http://localhost:5000${produk.imageUrl}`
                             }
                             alt={produk.name}
-                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                            className={`w-full h-full object-cover hover:scale-105 transition-transform duration-300 ${isOutOfStock ? 'grayscale' : ''}`}
                         />
+                        {/* Stock Badge */}
+                        {isOutOfStock && (
+                            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                                    STOK HABIS
+                                </span>
+                            </div>
+                        )}
+                        {isLowStock && !isOutOfStock && (
+                            <div className="absolute top-3 left-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                                Stok Terbatas
+                            </div>
+                        )}
                     </div>
                     <div className="flex-1 p-6 flex flex-col justify-between">
                         <div>
                             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                                 {produk.name}
                             </h3>
-                            <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
+                            <p className="text-gray-600 dark:text-gray-300 mb-2 line-clamp-2">
                                 {produk.description}
                             </p>
+                            {/* Stock Info */}
+                            <div className="mb-4">
+                                {isOutOfStock ? (
+                                    <span className="text-red-500 font-semibold text-sm">Stok Habis</span>
+                                ) : (
+                                    <span className={`text-sm ${isLowStock ? 'text-orange-500' : 'text-gray-500'}`}>
+                                        Stok: {produk.stock} unit
+                                    </span>
+                                )}
+                            </div>
                             <div className="text-2xl font-bold text-green-600 dark:text-green-400 mb-4">
                                 Rp {produk.price}
                             </div>
@@ -290,13 +349,24 @@ function ProductCard({ produk, viewMode, onAddToCart }) {
                                 Lihat Detail
                             </a>
                             <div className="flex gap-2">
-                                {showQtyInput ? (
+                                {isOutOfStock ? (
+                                    <button
+                                        disabled
+                                        className="bg-gray-400 text-white px-4 py-2 rounded-lg font-medium cursor-not-allowed"
+                                    >
+                                        Stok Habis
+                                    </button>
+                                ) : showQtyInput ? (
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="number"
                                             min="1"
+                                            max={produk.stock}
                                             value={qty}
-                                            onChange={(e) => setQty(parseInt(e.target.value) || 1)}
+                                            onChange={(e) => {
+                                                const newQty = parseInt(e.target.value) || 1;
+                                                setQty(Math.min(newQty, produk.stock));
+                                            }}
                                             className="w-16 px-2 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-center dark:bg-gray-700 dark:text-white"
                                         />
                                         <button
@@ -332,7 +402,7 @@ function ProductCard({ produk, viewMode, onAddToCart }) {
     }
 
     return (
-        <div className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 overflow-hidden">
+        <div className={`group bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 overflow-hidden ${isOutOfStock ? 'opacity-75' : ''}`}>
             <div className="relative overflow-hidden">
                 <img
                     src={
@@ -341,20 +411,48 @@ function ProductCard({ produk, viewMode, onAddToCart }) {
                             : `http://localhost:5000${produk.imageUrl}`
                     }
                     alt={produk.name}
-                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
+                    className={`w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300 ${isOutOfStock ? 'grayscale' : ''}`}
                 />
+
+                {/* Stock Badges */}
                 <div className="absolute top-3 right-3 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
                     {produk.category?.name || "Produk"}
                 </div>
+
+                {isOutOfStock && (
+                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                        <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                            STOK HABIS
+                        </span>
+                    </div>
+                )}
+
+                {isLowStock && !isOutOfStock && (
+                    <div className="absolute top-3 left-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                        Stok Terbatas
+                    </div>
+                )}
             </div>
 
             <div className="p-6">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
                     {produk.name}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">
+                <p className="text-gray-600 dark:text-gray-300 text-sm mb-2 line-clamp-2">
                     {produk.description}
                 </p>
+
+                {/* Stock Info */}
+                <div className="mb-3">
+                    {isOutOfStock ? (
+                        <span className="text-red-500 font-semibold text-sm">Stok Habis</span>
+                    ) : (
+                        <span className={`text-sm ${isLowStock ? 'text-orange-500' : 'text-gray-500'}`}>
+                            Stok: {produk.stock} unit
+                        </span>
+                    )}
+                </div>
+
                 <div className="text-xl font-bold text-green-600 dark:text-green-400 mb-4">
                     Rp {produk.price}
                 </div>
@@ -367,13 +465,24 @@ function ProductCard({ produk, viewMode, onAddToCart }) {
                         Lihat Detail
                     </a>
 
-                    {showQtyInput ? (
+                    {isOutOfStock ? (
+                        <button
+                            disabled
+                            className="w-full bg-gray-400 text-white px-4 py-2 rounded-lg font-medium cursor-not-allowed"
+                        >
+                            Stok Habis
+                        </button>
+                    ) : showQtyInput ? (
                         <div className="flex items-center gap-2">
                             <input
                                 type="number"
                                 min="1"
+                                max={produk.stock}
                                 value={qty}
-                                onChange={(e) => setQty(parseInt(e.target.value) || 1)}
+                                onChange={(e) => {
+                                    const newQty = parseInt(e.target.value) || 1;
+                                    setQty(Math.min(newQty, produk.stock));
+                                }}
                                 className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-center dark:bg-gray-700 dark:text-white"
                             />
                             <button

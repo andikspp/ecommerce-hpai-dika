@@ -225,6 +225,7 @@ export default function FooterClient() {
         "/admin/kategori/edit",
         "/admin/produk/edit",
         "/admin/order",
+        "/admin/produk/detail",
     ].includes(pathname);
 
     if (hideFooter) return null;
