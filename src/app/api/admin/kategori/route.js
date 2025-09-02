@@ -65,7 +65,8 @@ export async function PUT(request) {
     }
 
     try {
-        const res = await axios.put(`http://localhost:5000/api/kategori/${id}`, { nama });
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await axios.put(`${apiUrl}/api/kategori/${id}`, { nama });
         return new Response(JSON.stringify(res.data), {
             status: res.status,
             headers: { "Content-Type": "application/json" },
@@ -93,7 +94,8 @@ export async function DELETE(request) {
     }
 
     try {
-        const res = await axios.delete(`http://localhost:5000/api/kategori/${id}`);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await axios.delete(`${apiUrl}/api/kategori/${id}`);
         return new Response(JSON.stringify(res.data), {
             status: res.status,
             headers: { "Content-Type": "application/json" },
