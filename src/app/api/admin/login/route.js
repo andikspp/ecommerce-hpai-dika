@@ -4,7 +4,8 @@ export async function POST(request) {
     // kirim username dan password ke backend untuk login admin
     try {
         const { username, password } = await request.json();
-        const res = await axios.post("http://localhost:5000/api/admin/login", { username, password });
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await axios.post(`${apiUrl}/api/admin/login`, { username, password });
 
         // Kembalikan response dari backend ke frontend
         return new Response(JSON.stringify(res.data), {
