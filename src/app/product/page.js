@@ -408,7 +408,7 @@ function ProductCard({ produk, viewMode, onAddToCart }) {
                     src={
                         produk.gambar?.startsWith("http")
                             ? produk.gambar
-                            : `http://localhost:5000${produk.imageUrl}`
+                            : `${process.env.NEXT_PUBLIC_API_URL}${produk.imageUrl}`
                     }
                     alt={produk.name}
                     className={`w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300 ${isOutOfStock ? 'grayscale' : ''}`}
