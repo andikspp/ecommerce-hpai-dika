@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import Link from "next/link";
 
 export default function Homepage() {
   const [produk, setProduk] = useState([]);
@@ -35,15 +36,17 @@ export default function Homepage() {
               terpercaya, dan bersertifikat halal
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
+              <Link
                 href="/product"
                 className="inline-flex items-center px-8 py-4 bg-yellow-400 hover:bg-yellow-500 text-green-800 font-bold rounded-full text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
               >
                 🛍️ Belanja Sekarang
-              </a>
+              </Link>
               <a
                 href="https://wa.me/6282294317043"
                 className="inline-flex items-center px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-full text-lg border-2 border-white/30 backdrop-blur-sm transition-all duration-200"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 💬 Konsultasi Gratis
               </a>
@@ -204,15 +207,12 @@ export default function Homepage() {
 
           {/* CTA Button */}
           <div className="text-center">
-            <a
-              href="/product"
-              className="inline-flex items-center px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-full text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
-            >
+            <Link href="/product/" className="inline-flex items-center px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-full text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
               🛍️ Lihat Semua Produk
               <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -344,12 +344,12 @@ export default function Homepage() {
             Bergabunglah dengan ribuan pelanggan yang telah merasakan manfaat produk herbal HPAI
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
+            <Link
               href="/product"
               className="inline-flex items-center px-8 py-4 bg-white text-green-600 font-bold rounded-full text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
             >
               🛒 Mulai Belanja
-            </a>
+            </Link>
             <a
               href="https://wa.me/6282294317043"
               className="inline-flex items-center px-8 py-4 bg-transparent border-2 border-white text-white font-bold rounded-full text-lg hover:bg-white hover:text-green-600 transition-all duration-200"

@@ -4,6 +4,7 @@ import axios from "axios";
 import { useParams, useRouter } from "next/navigation";
 import { useCart } from "../../CartContext";
 import Swal from "sweetalert2";
+import Link from "next/link";
 
 export default function ProductDetailPage() {
     const { id } = useParams();
@@ -206,15 +207,13 @@ export default function ProductDetailPage() {
             <div className="bg-white dark:bg-gray-800 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <nav className="flex items-center space-x-2 text-sm">
-                        <a href="/" className="text-gray-500 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400">
+                        <Link href="/" className="text-gray-500 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400">
                             Beranda
-                        </a>
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                        <a href="/product" className="text-gray-500 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400">
+                        </Link>
+
+                        <Link href="/product/" className="text-gray-500 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400">
                             Produk
-                        </a>
+                        </Link>
                         <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>

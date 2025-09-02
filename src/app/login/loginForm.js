@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import axios from "axios";
+import Link from "next/link";
 
 export default function LoginForm() {
     const [form, setForm] = useState({ username: "", password: "" });
@@ -252,7 +253,7 @@ export default function LoginForm() {
 
                                 {/* Guest Shopping */}
                                 <div className="mt-6">
-                                    <a
+                                    <Link
                                         href="/product"
                                         className="w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-semibold py-3 px-6 rounded-xl transition-colors duration-200 flex items-center justify-center gap-2"
                                     >
@@ -260,7 +261,7 @@ export default function LoginForm() {
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                                         </svg>
                                         <span>Lanjut Belanja</span>
-                                    </a>
+                                    </Link>
                                 </div>
                             </div>
                         </div>

@@ -501,8 +501,8 @@ export default function AdminDashboardPage() {
                                         </div>
                                         <div className="text-right">
                                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${user.isVerified
-                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                                                    : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
+                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                                                : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
                                                 }`}>
                                                 {user.isVerified ? 'Verified' : 'Pending'}
                                             </span>
@@ -548,8 +548,8 @@ export default function AdminDashboardPage() {
                                         </div>
                                         <div className="text-right">
                                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${product.isActive
-                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                                                    : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
+                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                                                : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
                                                 }`}>
                                                 {product.isActive ? 'Aktif' : 'Non-aktif'}
                                             </span>

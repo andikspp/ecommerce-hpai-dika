@@ -411,8 +411,8 @@ export default function CheckoutPage() {
                                         <label
                                             key={option.value}
                                             className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${shippingMethod === option.value
-                                                    ? "border-green-500 bg-green-50 dark:bg-green-900/30"
-                                                    : "border-gray-200 dark:border-gray-600 hover:border-green-300 dark:hover:border-green-500"
+                                                ? "border-green-500 bg-green-50 dark:bg-green-900/30"
+                                                : "border-gray-200 dark:border-gray-600 hover:border-green-300 dark:hover:border-green-500"
                                                 }`}
                                         >
                                             <input

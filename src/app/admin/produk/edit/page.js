@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import AdminSidebar from "@/components/AdminSidebar";
 import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -20,7 +20,8 @@ import {
     FaEdit
 } from "react-icons/fa";
 
-export default function EditProdukPage() {
+// Component yang menggunakan useSearchParams
+function EditProdukContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const id = searchParams.get("id");
@@ -440,5 +441,31 @@ export default function EditProdukPage() {
                 </div>
             </main>
         </div>
+    );
+}
+
+// Loading component untuk fallback
+function EditProdukLoading() {
+    return (
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+            <div className="text-center">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600 mx-auto mb-6"></div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                    Memuat Data Produk...
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400">
+                    Mohon tunggu sebentar
+                </p>
+            </div>
+        </div>
+    );
+}
+
+// Main component dengan Suspense wrapper
+export default function EditProdukPage() {
+    return (
+        <Suspense fallback={<EditProdukLoading />}>
+            <EditProdukContent />
+        </Suspense>
     );
 }

@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useCart } from "./CartContext";
+import Link from "next/link";
 
 function Navbar({ isLoggedIn, user, onLogout }) {
     const pathname = usePathname();
@@ -85,7 +86,7 @@ function Navbar({ isLoggedIn, user, onLogout }) {
                     <div className="flex items-center justify-between h-16 lg:h-18">
                         {/* Logo */}
                         <div className="flex-shrink-0">
-                            <a
+                            <Link
                                 href="/"
                                 className={`flex items-center space-x-2 font-bold text-xl lg:text-2xl tracking-wide transition-colors duration-300 ${scrolled
                                     ? 'text-green-700 dark:text-green-300'
@@ -94,7 +95,7 @@ function Navbar({ isLoggedIn, user, onLogout }) {
                             >
                                 <span className="hidden sm:block">Stokis HNI & HPAI Ika</span>
                                 <span className="sm:hidden">HPAI Ika</span>
-                            </a>
+                            </Link>
                         </div>
 
                         {/* Desktop Navigation */}
