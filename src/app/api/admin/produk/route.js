@@ -3,7 +3,8 @@ import axios from "axios";
 export async function GET(request) {
     // Ambil data produk dari backend
     try {
-        const res = await axios.get("http://localhost:5000/api/produk");
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await axios.get(`${apiUrl}/api/produk`);
 
         // Kembalikan response dari backend ke frontend
         return new Response(JSON.stringify(res.data), {
@@ -30,7 +31,8 @@ export async function POST(request) {
         }
 
         // Kirim FormData ke backend
-        const res = await fetch("http://localhost:5000/api/produk", {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await fetch(`${apiUrl}/api/produk`, {
             method: "POST",
             body: formData,
         });
