@@ -6,8 +6,9 @@ export async function GET(request) {
         // Ambil token dari header
         const token = request.headers.get("Authorization")?.split(" ")[1];
 
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
         // Kirim permintaan ke backend untuk mendapatkan profil pengguna
-        const res = await axios.get("http://localhost:5000/api/profile", {
+        const res = await axios.get(`${apiUrl}/api/profile`, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -36,7 +37,8 @@ export async function PUT(request) {
         const data = await request.json();
 
         // Kirim permintaan ke backend untuk memperbarui profil pengguna
-        const res = await axios.put("http://localhost:5000/api/profile", data, {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await axios.put(`${apiUrl}/api/profile`, data, {
             headers: { Authorization: `Bearer ${token}` },
         });
 

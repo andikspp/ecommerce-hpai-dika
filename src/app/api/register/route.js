@@ -4,7 +4,8 @@ export async function POST(request) {
     try {
         const body = await request.json();
         // Kirim data ke backend Express
-        const res = await axios.post("http://localhost:5000/api/register", body);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await axios.post(`${apiUrl}/api/register`, body);
         return new Response(JSON.stringify(res.data), {
             status: 201,
             headers: { "Content-Type": "application/json" },

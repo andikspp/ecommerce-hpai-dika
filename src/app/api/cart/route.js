@@ -5,7 +5,8 @@ export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
         const userId = searchParams.get("userId");
-        let url = "http://localhost:5000/api/cart";
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        let url = `${apiUrl}/api/cart`;
         if (userId) {
             url += `/${userId}`;
         }

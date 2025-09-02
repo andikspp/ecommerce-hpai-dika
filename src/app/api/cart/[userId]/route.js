@@ -10,7 +10,8 @@ export async function GET(request, { params }) {
         });
     }
     try {
-        const url = `http://localhost:5000/api/cart/${userId}`;
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const url = `${apiUrl}/api/cart/${userId}`;
         const res = await axios.get(url);
         return new Response(JSON.stringify(res.data), {
             status: res.status,

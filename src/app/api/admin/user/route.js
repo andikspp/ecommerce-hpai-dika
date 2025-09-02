@@ -2,7 +2,8 @@ import axios from "axios";
 
 export async function GET() {
     try {
-        const res = await axios.get("http://localhost:5000/api/admin/user");
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await axios.get(`${apiUrl}/api/admin/user`);
         return new Response(JSON.stringify(res.data), {
             status: res.status,
             headers: { "Content-Type": "application/json" },
@@ -29,7 +30,8 @@ export async function DELETE(request) {
     }
 
     try {
-        const response = await axios.delete(`http://localhost:5000/api/admin/user/${id}`);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const response = await axios.delete(`${apiUrl}/api/admin/user/${id}`);
         return new Response(JSON.stringify({ message: "User deleted successfully" }), {
             status: response.status,
             headers: { "Content-Type": "application/json" },

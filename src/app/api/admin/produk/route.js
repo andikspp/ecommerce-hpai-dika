@@ -63,7 +63,8 @@ export async function PATCH(request) {
 
     try {
         const { isActive } = await request.json();
-        const res = await axios.patch(`http://localhost:5000/api/produk/${id}/status`, { isActive });
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await axios.patch(`${apiUrl}/api/produk/${id}/status`, { isActive });
 
         return new Response(JSON.stringify(res.data), {
             status: res.status,
@@ -91,7 +92,8 @@ export async function PUT(request) {
 
     try {
         const formData = await request.formData();
-        const res = await fetch(`http://localhost:5000/api/produk/${id}`, {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await fetch(`${apiUrl}/api/produk/${id}`, {
             method: "PUT",
             body: formData,
         });

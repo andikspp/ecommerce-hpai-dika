@@ -5,7 +5,8 @@ export async function POST(request) {
         const body = await request.json();
         console.log("Request body:", body);
         const { origin, destination, weight, courier, kota, kecamatan, provinsi } = body;
-        const res = await axios.post("http://localhost:5000/api/ongkir", {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await axios.post(`${apiUrl}/api/ongkir`, {
             origin,
             destination,
             weight,

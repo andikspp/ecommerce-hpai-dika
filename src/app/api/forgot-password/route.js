@@ -4,7 +4,8 @@ export async function POST(request) {
     // kirim email ke backend untuk mengirim link reset password
     try {
         const { email } = await request.json();
-        const res = await axios.post("http://localhost:5000/api/forgot-password", { email });
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await axios.post(`${apiUrl}/api/forgot-password`, { email });
 
         // Kembalikan response dari backend ke frontend
         return new Response(JSON.stringify(res.data), {

@@ -5,13 +5,14 @@ export async function POST(request) {
         console.log("Received POST /api/review request");
         const body = await request.json();
         const { orderId, productId, rating, review, userId } = body;
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
         // Validasi data wajib
         if (!orderId || !productId || !rating || !review || !userId) {
             return new Response(JSON.stringify({ success: false, message: "Data tidak lengkap" }), { status: 400 });
         }
 
-        const response = await axios.post("http://localhost:5000/api/reviews", {
+        const response = await axios.post(`${apiUrl}/api/reviews`, {
             orderId,
             productId,
             rating,

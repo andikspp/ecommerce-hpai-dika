@@ -9,7 +9,8 @@ export async function GET(_, context) {
         });
     }
     try {
-        const res = await axios.get(`http://localhost:5000/api/produk/${id}`);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await axios.get(`${apiUrl}/api/produk/${id}`);
         return new Response(JSON.stringify(res.data), {
             status: res.status,
             headers: { "Content-Type": "application/json" },

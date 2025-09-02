@@ -6,13 +6,14 @@ export async function GET(request) {
         // Ambil orderId dari query parameter (?orderId=...)
         const { searchParams } = new URL(request.url);
         const orderId = searchParams.get("orderId");
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
         if (!orderId) {
             return new Response(JSON.stringify({ success: false, message: "orderId diperlukan" }), { status: 400 });
         }
 
         // Panggil backend utama untuk ambil review berdasarkan orderId
-        const response = await axios.get(`http://localhost:5000/api/reviews/order/${orderId}`);
+        const response = await axios.get(`${apiUrl}/api/reviews/order/${orderId}`);
 
         if (response.data && response.data.success) {
             return new Response(JSON.stringify({

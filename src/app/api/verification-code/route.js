@@ -3,9 +3,10 @@ import axios from "axios";
 export async function POST(request) {
     try {
         const { code } = await request.json();
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
         // Kirim kode ke backend Express menggunakan axios
-        const res = await axios.post("http://localhost:5000/api/verification-code", { code });
+        const res = await axios.post(`${apiUrl}/api/verification-code`, { code });
 
         // Teruskan response dari backend ke frontend
         return new Response(JSON.stringify(res.data), {

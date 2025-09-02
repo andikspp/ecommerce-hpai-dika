@@ -5,7 +5,8 @@ export async function POST(request) {
         const { username, password } = await request.json();
 
         // Kirim data login ke backend Express
-        const res = await axios.post("http://localhost:5000/api/login", { username, password });
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await axios.post(`${apiUrl}/api/login`, { username, password });
 
         // Teruskan response dari backend ke frontend
         return new Response(JSON.stringify(res.data), {
