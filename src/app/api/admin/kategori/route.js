@@ -6,12 +6,13 @@ export async function GET(request) {
 
     try {
         let res;
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
         if (id) {
             // Ambil kategori by id
-            res = await axios.get(`http://localhost:5000/api/kategori/${id}`);
+            res = await axios.get(`${apiUrl}/api/kategori/${id}`);
         } else {
             // Ambil semua kategori
-            res = await axios.get("http://localhost:5000/api/kategori");
+            res = await axios.get(`${apiUrl}/api/kategori`);
         }
 
         return new Response(JSON.stringify(res.data), {
@@ -32,7 +33,8 @@ export async function POST(request) {
     // Kirim data kategori baru ke backend
     try {
         const { nama } = await request.json();
-        const res = await axios.post("http://localhost:5000/api/kategori", { nama });
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await axios.post(`${apiUrl}/api/kategori`, { nama });
 
         // Kembalikan response dari backend ke frontend
         return new Response(JSON.stringify(res.data), {
