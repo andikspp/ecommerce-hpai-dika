@@ -77,7 +77,7 @@ function DetailProdukContent() {
     };
 
     const handleEdit = () => {
-        router.push(`/admin/produk/edit?id=${id}`);
+        router.push(`/admin/produk/edit/${id}`);
     };
 
     const handleDelete = async () => {
@@ -145,7 +145,7 @@ function DetailProdukContent() {
 
         if (result.isConfirmed) {
             try {
-                await axios.patch(`/api/produk?id=${id}`, {
+                await axios.patch(`/api/produk/${id}`, {
                     isActive: !product.isActive,
                 });
                 setProduct(prev => ({ ...prev, isActive: !prev.isActive }));

@@ -89,7 +89,7 @@ export default function AdminUserPage() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    const response = await axios.delete(`/api/admin/user?id=${id}`);
+                    const response = await axios.delete(`/api/admin/user/${id}`);
                     if (response.status === 200) {
                         setUsers(users.filter((user) => user.id !== id));
                         Swal.fire({

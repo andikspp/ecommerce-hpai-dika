@@ -79,11 +79,11 @@ export default function AdminProdukPage() {
     };
 
     const handleEdit = (id) => {
-        router.push(`/admin/produk/edit?id=${id}`);
+        router.push(`/admin/produk/edit/${id}`);
     };
 
     const handleView = (id) => {
-        router.push(`/admin/produk/detail?id=${id}`);
+        router.push(`/admin/produk/detail/${id}`);
     };
 
     const handleDelete = async (id) => {
@@ -149,7 +149,7 @@ export default function AdminProdukPage() {
 
         if (result.isConfirmed) {
             try {
-                await axios.patch(`/api/produk?id=${id}`, {
+                await axios.patch(`/api/produk/${id}`, {
                     isActive: !currentStatus,
                 });
                 setProducts(products =>
