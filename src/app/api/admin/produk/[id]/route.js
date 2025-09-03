@@ -10,7 +10,7 @@ export async function GET(request, { params }) {
     }
     try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const res = await axios.get(`${apiUrl}/api/produk/${id}`);
+        const res = await axios.get(`${apiUrl}/api/admin/produk/${id}`);
         return new Response(JSON.stringify(res.data), {
             status: res.status,
             headers: { "Content-Type": "application/json" },
@@ -31,7 +31,7 @@ export async function PUT(request, { params }) {
         const formData = await request.formData();
         // Kirim FormData ke backend
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const res = await fetch(`${apiUrl}/api/produk/${id}`, {
+        const res = await fetch(`${apiUrl}/api/admin/produk/${id}`, {
             method: "PUT",
             body: formData,
         });
@@ -58,7 +58,7 @@ export async function DELETE(request, { params }) {
     }
     try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const res = await axios.delete(`${apiUrl}/api/produk/${id}`);
+        const res = await axios.delete(`${apiUrl}/api/admin/produk/${id}`);
         return new Response(JSON.stringify(res.data), {
             status: res.status,
             headers: { "Content-Type": "application/json" },

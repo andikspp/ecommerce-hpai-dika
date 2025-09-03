@@ -9,10 +9,10 @@ export async function GET(request) {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
         if (id) {
             // Ambil kategori by id
-            res = await axios.get(`${apiUrl}/api/kategori/${id}`);
+            res = await axios.get(`${apiUrl}/api/admin/kategori/${id}`);
         } else {
             // Ambil semua kategori
-            res = await axios.get(`${apiUrl}/api/kategori`);
+            res = await axios.get(`${apiUrl}/api/admin/kategori`);
         }
 
         return new Response(JSON.stringify(res.data), {
@@ -34,7 +34,7 @@ export async function POST(request) {
     try {
         const { nama } = await request.json();
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const res = await axios.post(`${apiUrl}/api/kategori`, { nama });
+        const res = await axios.post(`${apiUrl}/api/admin/kategori`, { nama });
 
         // Kembalikan response dari backend ke frontend
         return new Response(JSON.stringify(res.data), {
@@ -66,7 +66,7 @@ export async function PUT(request) {
 
     try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const res = await axios.put(`${apiUrl}/api/kategori/${id}`, { nama });
+        const res = await axios.put(`${apiUrl}/api/admin/kategori/${id}`, { nama });
         return new Response(JSON.stringify(res.data), {
             status: res.status,
             headers: { "Content-Type": "application/json" },
@@ -95,7 +95,7 @@ export async function DELETE(request) {
 
     try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const res = await axios.delete(`${apiUrl}/api/kategori/${id}`);
+        const res = await axios.delete(`${apiUrl}/api/admin/kategori/${id}`);
         return new Response(JSON.stringify(res.data), {
             status: res.status,
             headers: { "Content-Type": "application/json" },
