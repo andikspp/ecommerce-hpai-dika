@@ -4,7 +4,7 @@ export async function GET(request) {
     // Ambil data produk dari backend
     try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const res = await axios.get(`${apiUrl}/api/admin/produk`);
+        const res = await axios.get(`${apiUrl}/api/produk`);
 
         // Kembalikan response dari backend ke frontend
         return new Response(JSON.stringify(res.data), {
@@ -32,7 +32,7 @@ export async function POST(request) {
 
         // Kirim FormData ke backend
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const res = await fetch(`${apiUrl}/api/admin/produk`, {
+        const res = await fetch(`${apiUrl}/api/produk`, {
             method: "POST",
             body: formData,
         });
@@ -64,7 +64,7 @@ export async function PATCH(request) {
     try {
         const { isActive } = await request.json();
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const res = await axios.patch(`${apiUrl}/api/admin/produk/${id}/status`, { isActive });
+        const res = await axios.patch(`${apiUrl}/api/produk/${id}/status`, { isActive });
 
         return new Response(JSON.stringify(res.data), {
             status: res.status,
@@ -93,7 +93,7 @@ export async function PUT(request) {
     try {
         const formData = await request.formData();
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const res = await fetch(`${apiUrl}/api/admin/produk/${id}`, {
+        const res = await fetch(`${apiUrl}/api/produk/${id}`, {
             method: "PUT",
             body: formData,
         });
