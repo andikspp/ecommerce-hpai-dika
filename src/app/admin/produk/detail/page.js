@@ -46,7 +46,7 @@ function DetailProdukContent() {
 
     const fetchProduct = useCallback(async () => {
         try {
-            const response = await axios.get(`/api/admin/produk/${id}`);
+            const response = await axios.get(`/api/produk/${id}`);
             setProduct(response.data);
         } catch (error) {
             Swal.fire({
@@ -99,7 +99,7 @@ function DetailProdukContent() {
 
         if (result.isConfirmed) {
             try {
-                await axios.delete(`/api/admin/produk/${id}`);
+                await axios.delete(`/api/produk/${id}`);
                 await Swal.fire({
                     icon: "success",
                     title: "Berhasil!",
@@ -145,7 +145,7 @@ function DetailProdukContent() {
 
         if (result.isConfirmed) {
             try {
-                await axios.patch(`/api/admin/produk?id=${id}`, {
+                await axios.patch(`/api/produk?id=${id}`, {
                     isActive: !product.isActive,
                 });
                 setProduct(prev => ({ ...prev, isActive: !prev.isActive }));

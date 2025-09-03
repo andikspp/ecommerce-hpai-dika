@@ -49,7 +49,7 @@ export default function TambahProdukPage() {
         if (isChecking) return;
         const fetchCategories = async () => {
             try {
-                const res = await axios.get("/api/admin/kategori");
+                const res = await axios.get("/api/kategori");
                 setCategories(res.data || []);
             } catch {
                 setCategories([]);
@@ -98,7 +98,7 @@ export default function TambahProdukPage() {
                 formData.append("image", imageFile);
             }
 
-            await axios.post("/api/admin/produk", formData, {
+            await axios.post("/api/produk", formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 

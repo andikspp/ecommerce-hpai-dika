@@ -129,9 +129,9 @@ export default function AdminDashboardPage() {
         try {
             // Fetch data dari semua endpoint
             const [productsRes, usersRes, categoriesRes] = await Promise.all([
-                axios.get('/api/admin/produk'),
-                axios.get('/api/admin/user'),
-                axios.get('/api/admin/kategori')
+                axios.get('/api/produk'),
+                axios.get('/api/user'),
+                axios.get('/api/kategori')
             ]);
 
             const productsData = productsRes.data || [];

@@ -57,7 +57,7 @@ function EditProdukContent() {
             if (!id) return;
             try {
                 // Ambil produk by id
-                const res = await axios.get(`/api/admin/produk/${id}`);
+                const res = await axios.get(`/api/produk/${id}`);
                 const produk = res.data;
                 setName(produk.name ?? "");
                 setPrice(produk.price ?? "");
@@ -68,7 +68,7 @@ function EditProdukContent() {
                 setIsActive(produk.isActive ?? true);
 
                 // Ambil daftar kategori
-                const kategoriRes = await axios.get("/api/admin/kategori");
+                const kategoriRes = await axios.get("/api/kategori");
                 setCategories(Array.isArray(kategoriRes.data) ? kategoriRes.data : []);
             } catch (err) {
                 Swal.fire({
@@ -124,7 +124,7 @@ function EditProdukContent() {
                 formData.append("image", imageFile);
             }
 
-            await axios.put(`/api/admin/produk/${id}`, formData, {
+            await axios.put(`/api/produk/${id}`, formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 

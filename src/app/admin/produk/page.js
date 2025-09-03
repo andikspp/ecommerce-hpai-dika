@@ -49,7 +49,7 @@ export default function AdminProdukPage() {
 
     const fetchProducts = async () => {
         try {
-            const res = await axios.get("/api/admin/produk");
+            const res = await axios.get("/api/produk");
             setProducts(res.data || []);
         } catch (err) {
             setProducts([]);
@@ -60,7 +60,7 @@ export default function AdminProdukPage() {
 
     const fetchCategories = async () => {
         try {
-            const res = await axios.get("/api/admin/kategori");
+            const res = await axios.get("/api/kategori");
             setCategories(res.data || []);
         } catch (err) {
             setCategories([]);
@@ -105,7 +105,7 @@ export default function AdminProdukPage() {
 
         if (result.isConfirmed) {
             try {
-                await axios.delete(`/api/admin/produk/${id}`);
+                await axios.delete(`/api/produk/${id}`);
                 setProducts(products => products.filter(prod => prod.id !== id));
                 Swal.fire({
                     icon: "success",
@@ -149,7 +149,7 @@ export default function AdminProdukPage() {
 
         if (result.isConfirmed) {
             try {
-                await axios.patch(`/api/admin/produk?id=${id}`, {
+                await axios.patch(`/api/produk?id=${id}`, {
                     isActive: !currentStatus,
                 });
                 setProducts(products =>
