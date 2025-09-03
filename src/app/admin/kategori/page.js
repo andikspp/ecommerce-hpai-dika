@@ -40,7 +40,7 @@ export default function AdminKategoriPage() {
 
     const fetchCategories = async () => {
         try {
-            const res = await axios.get("/api/admin/kategori");
+            const res = await axios.get("/api/kategori");
             setCategories(res.data || []);
         } catch (err) {
             setCategories([]);
