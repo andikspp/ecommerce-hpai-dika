@@ -39,7 +39,7 @@ export default function TambahKategoriPage() {
         e.preventDefault();
         setLoading(true);
         try {
-            await axios.post("/api/admin/kategori", { nama: name });
+            await axios.post("/api/kategori", { nama: name });
             await Swal.fire({
                 icon: "success",
                 title: "Berhasil!",
