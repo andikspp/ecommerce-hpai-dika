@@ -79,7 +79,7 @@ export default function AdminKategoriPage() {
 
         if (result.isConfirmed) {
             try {
-                await axios.delete(`/api/kategori?id=${id}`);
+                await axios.delete(`/api/kategori/${id}`);
                 setCategories(categories.filter(cat => cat.id !== id));
                 Swal.fire({
                     icon: "success",
