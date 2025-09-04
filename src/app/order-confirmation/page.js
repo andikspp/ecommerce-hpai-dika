@@ -795,7 +795,7 @@ function OrderConfirmationContent() {
                                                     {existingReview?.review && (
                                                         <div className="mt-4 bg-gray-100 dark:bg-gray-600 rounded-lg p-4">
                                                             <p className="text-sm text-gray-700 dark:text-gray-300 italic">
-                                                                "{existingReview.review}"
+                                                                &ldquo;{existingReview.review}&rdquo;
                                                             </p>
                                                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                                                                 Ditulis pada {new Date(existingReview.createdAt).toLocaleDateString("id-ID")}
