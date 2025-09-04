@@ -145,7 +145,7 @@ function DetailProdukContent() {
 
         if (result.isConfirmed) {
             try {
-                await axios.patch(`/api/produk/${id}`, {
+                await axios.patch(`/api/produk/${id}/status`, {
                     isActive: !product.isActive,
                 });
                 setProduct(prev => ({ ...prev, isActive: !prev.isActive }));
