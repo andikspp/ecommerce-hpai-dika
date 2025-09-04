@@ -103,7 +103,7 @@ function EditKategoriContent() {
         setSubmitting(true);
 
         try {
-            await axios.put(`/api/kategori?id=${id}`, {
+            await axios.put(`/api/admin/kategori?id=${id}`, {
                 name: formData.name.trim(),
                 description: formData.description.trim(),
                 isActive: formData.isActive,
