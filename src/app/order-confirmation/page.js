@@ -49,7 +49,7 @@ function OrderConfirmationContent() {
 
                     // Fetch existing reviews untuk order ini
                     try {
-                        const reviewsRes = await axios.get(`/api/review/order?orderId=${orderId}`);
+                        const reviewsRes = await axios.get(`/api/reviews/order/${orderId}`);
                         if (reviewsRes.data && reviewsRes.data.success) {
                             const reviewsData = reviewsRes.data.reviews;
                             setExistingReviews(reviewsData);
@@ -185,7 +185,7 @@ function OrderConfirmationContent() {
                 setReviewedProducts(prev => new Set([...prev, productId]));
 
                 try {
-                    const reviewsRes = await axios.get(`/api/review/order?orderId=${order.id}`);
+                    const reviewsRes = await axios.get(`/api/review/order/${order.id}`);
                     if (reviewsRes.data && reviewsRes.data.success) {
                         const reviewsData = reviewsRes.data.reviews;
                         setExistingReviews(reviewsData);
