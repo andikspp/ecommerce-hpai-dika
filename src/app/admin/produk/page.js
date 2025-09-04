@@ -149,7 +149,7 @@ export default function AdminProdukPage() {
 
         if (result.isConfirmed) {
             try {
-                await axios.patch(`/api/produk/${id}`, {
+                await axios.patch(`/api/produk/${id}/status`, {
                     isActive: !currentStatus,
                 });
                 setProducts(products =>
