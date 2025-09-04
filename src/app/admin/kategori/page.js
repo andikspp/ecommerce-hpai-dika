@@ -57,7 +57,7 @@ export default function AdminKategoriPage() {
     };
 
     const handleEdit = (id) => {
-        router.push(`/admin/kategori/edit?id=${id}`);
+        router.push(`/admin/kategori/edit/${id}`);
     };
 
     const handleDelete = async (id) => {
