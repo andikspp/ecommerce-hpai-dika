@@ -405,17 +405,15 @@ function CartItem({ item, product, onQtyChange, onRemove }) {
         <div className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors duration-200">
             <div className="flex flex-col sm:flex-row gap-4">
                 {/* Product Image */}
-                <div className="flex-shrink-0">
-                    <img
-                        src={
-                            product.imageUrl?.startsWith("http")
-                                ? product.imageUrl
-                                : `http://localhost:5000${product.imageUrl || ""}`
-                        }
-                        alt={product.name || "Produk"}
-                        className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-600"
-                    />
-                </div>
+                <img
+                    src={
+                        product.imageUrl?.startsWith("http")
+                            ? product.imageUrl
+                            : `${process.env.NEXT_PUBLIC_API_URL}${product.imageUrl || ""}`
+                    }
+                    alt={product.name || "Produk"}
+                    className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-600"
+                />
 
                 {/* Product Info */}
                 <div className="flex-1 min-w-0">

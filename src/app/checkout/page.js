@@ -496,7 +496,11 @@ export default function CheckoutPage() {
                                             return (
                                                 <div key={item.id} className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
                                                     <img
-                                                        src={product.imageUrl?.startsWith("http") ? product.imageUrl : `http://localhost:5000${product.imageUrl || ""}`}
+                                                        src={
+                                                            product.imageUrl?.startsWith("http")
+                                                                ? product.imageUrl
+                                                                : `${process.env.NEXT_PUBLIC_API_URL}${product.imageUrl || ""}`
+                                                        }
                                                         alt={product.name || "Produk"}
                                                         className="w-16 h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-600"
                                                     />
