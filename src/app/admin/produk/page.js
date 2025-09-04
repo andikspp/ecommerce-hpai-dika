@@ -79,7 +79,7 @@ export default function AdminProdukPage() {
     };
 
     const handleEdit = (id) => {
-        router.push(`/admin/produk/edit/${id}`);
+        router.push(`/admin/produk/edit?id=${id}`);
     };
 
     const handleView = (id) => {
