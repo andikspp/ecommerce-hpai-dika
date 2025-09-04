@@ -41,7 +41,7 @@ export default function EditKategoriPage() {
 
     const fetchKategori = useCallback(async () => {
         try {
-            const response = await axios.get(`/api/admin/kategori/${id}`);
+            const response = await axios.get(`/api/kategori/${id}`);
             const kategori = response.data;
             setFormData({
                 name: kategori.name || "",
@@ -102,7 +102,7 @@ export default function EditKategoriPage() {
         setSubmitting(true);
 
         try {
-            await axios.put(`/api/admin/kategori/${id}`, {
+            await axios.put(`/api/kategori/${id}`, {
                 name: formData.name.trim(),
                 description: formData.description.trim(),
                 isActive: formData.isActive,
