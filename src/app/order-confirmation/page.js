@@ -119,7 +119,7 @@ function OrderConfirmationContent() {
         setSubmittingReview(prev => ({ ...prev, [productId]: true }));
 
         try {
-            const res = await axios.post('/api/review', {
+            const res = await axios.post('/api/reviews', {
                 orderId: order.id,
                 productId: productId,
                 rating: rating,
@@ -704,7 +704,7 @@ function OrderConfirmationContent() {
                                                         {item.product.name}
                                                     </h4>
                                                     <p className="text-gray-600 dark:text-gray-400 text-sm">
-                                                        Quantity: {item.quantity} • Harga: Rp {(item.price * item.quantity).toLocaleString("id-ID")}
+                                                        Quantity: {item.qty} • Harga: Rp {(item.price * item.qty).toLocaleString("id-ID")}
                                                     </p>
                                                 </div>
                                                 {isReviewed && (
