@@ -141,7 +141,7 @@ export default function AdminOrderPage() {
                 setActionLoading(false);
                 return;
             }
-            await axios.patch(`/api/order?id=${selectedOrder.id}`, { status });
+            await axios.put(`/api/orders/${selectedOrder.id}/status`, { status });
             setOrders(orders =>
                 orders.map(o => o.id === selectedOrder.id ? { ...o, status } : o)
             );
