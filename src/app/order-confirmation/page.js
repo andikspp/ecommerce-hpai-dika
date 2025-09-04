@@ -23,7 +23,7 @@ import {
 function OrderConfirmationContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const orderId = searchParams.get("orderId");
+    const orderId = searchParams.get("orderId") || searchParams.get("id");
 
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
