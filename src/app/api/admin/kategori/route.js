@@ -52,7 +52,7 @@ export async function POST(request) {
 }
 
 export async function PUT(request) {
-    // Ambil id dari query parameter
+    // Ambil id dari search parameter
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
     const { nama } = await request.json();
@@ -82,11 +82,12 @@ export async function PUT(request) {
 }
 
 export async function DELETE(request) {
-    // Ambil id dari query parameter
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get("id");
+    // Ambil id dari path
+    const { pathname } = new URL(request.url);
+    const pathParts = pathname.split("/");
+    const id = pathParts[pathParts.length - 1] || null;
 
-    if (!id) {
+    if (!id || id === "kategori") {
         return new Response(JSON.stringify({ error: "ID kategori wajib diisi" }), {
             status: 400,
             headers: { "Content-Type": "application/json" },
