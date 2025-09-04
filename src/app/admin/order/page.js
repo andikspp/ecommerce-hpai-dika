@@ -47,7 +47,7 @@ export default function AdminOrderPage() {
 
     const fetchOrders = async () => {
         try {
-            const response = await axios.get("/api/order");
+            const response = await axios.get("/api/orders");
             setOrders(Array.isArray(response.data) ? response.data : []);
         } catch {
             setOrders([]);

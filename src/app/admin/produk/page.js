@@ -83,7 +83,7 @@ export default function AdminProdukPage() {
     };
 
     const handleView = (id) => {
-        router.push(`/admin/produk/detail/${id}`);
+        router.push(`/admin/produk/detail?id=${id}`);
     };
 
     const handleDelete = async (id) => {

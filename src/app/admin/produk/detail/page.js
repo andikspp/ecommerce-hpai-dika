@@ -77,7 +77,7 @@ function DetailProdukContent() {
     };
 
     const handleEdit = () => {
-        router.push(`/admin/produk/edit/${id}`);
+        router.push(`/admin/produk/edit?id=${id}`);
     };
 
     const handleDelete = async () => {
@@ -270,7 +270,11 @@ function DetailProdukContent() {
                                                     </div>
                                                 )}
                                                 <img
-                                                    src={product.imageUrl.startsWith("http") ? product.imageUrl : `http://localhost:5000${product.imageUrl}`}
+                                                    src={
+                                                        product.imageUrl.startsWith("http")
+                                                            ? product.imageUrl
+                                                            : `${process.env.NEXT_PUBLIC_API_URL}${product.imageUrl}`
+                                                    }
                                                     alt={product.name}
                                                     className="w-full h-full object-cover"
                                                     onLoad={() => setImageLoading(false)}
