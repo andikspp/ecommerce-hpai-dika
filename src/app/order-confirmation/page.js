@@ -609,12 +609,12 @@ function OrderConfirmationContent() {
                                                         {item.product?.name || 'Produk'}
                                                     </h4>
                                                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                        Qty: {item.quantity} × Rp {item.price?.toLocaleString("id-ID")}
+                                                        Qty: {item.qty} × Rp {item.price?.toLocaleString("id-ID")}
                                                     </p>
                                                 </div>
                                                 <div className="text-right">
                                                     <p className="font-semibold text-gray-900 dark:text-white">
-                                                        Rp {(item.quantity * item.price).toLocaleString("id-ID")}
+                                                        Rp {(item.qty * item.price).toLocaleString("id-ID")}
                                                     </p>
                                                 </div>
                                             </div>
