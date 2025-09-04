@@ -52,12 +52,12 @@ export async function POST(request) {
 }
 
 export async function PUT(request) {
-    // Ambil id dari search parameter
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get("id");
-    const { nama } = await request.json();
+    const { pathname } = new URL(request.url);
+    const pathParts = pathname.split("/");
+    const id = pathParts[pathParts.length - 1] || null;
+    const { name, description, isActive } = await request.json();
 
-    if (!id) {
+    if (!id || id === "kategori") {
         return new Response(JSON.stringify({ error: "ID kategori wajib diisi" }), {
             status: 400,
             headers: { "Content-Type": "application/json" },
@@ -66,7 +66,7 @@ export async function PUT(request) {
 
     try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const res = await axios.put(`${apiUrl}/api/kategori/${id}`, { nama });
+        const res = await axios.put(`${apiUrl}/api/kategori/${id}`, { name, description, isActive });
         return new Response(JSON.stringify(res.data), {
             status: res.status,
             headers: { "Content-Type": "application/json" },
