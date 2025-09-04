@@ -173,7 +173,7 @@ export default function Homepage() {
                     src={
                       item.gambar?.startsWith("http")
                         ? item.gambar
-                        : `http://localhost:5000${item.imageUrl}`
+                        : `${process.env.NEXT_PUBLIC_API_URL}${item.imageUrl || item.gambar}`
                     }
                     alt={item.name}
                     className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
