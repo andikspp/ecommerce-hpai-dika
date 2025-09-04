@@ -104,6 +104,7 @@ export default function AdminUserPage() {
                         });
                     }
                 } catch (error) {
+                    console.error("Error deleting user:", error);
                     Swal.fire({
                         icon: "error",
                         title: "Gagal!",
