@@ -284,6 +284,7 @@ export default function NavbarClient() {
         "/admin/produk/edit",
         "/admin/order",
         "/admin/produk/detail",
+        "admin/kategori/edit/[id]",
     ].includes(pathname);
 
     const [isLoggedIn, setIsLoggedIn] = useState(false);
