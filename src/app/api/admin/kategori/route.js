@@ -51,13 +51,11 @@ export async function POST(request) {
     }
 }
 
-export async function PUT(request) {
-    const { pathname } = new URL(request.url);
-    const pathParts = pathname.split("/");
-    const id = pathParts[pathParts.length - 1] || null;
+export async function PUT(request, { params }) {
+    const id = params.id;
     const { name, description, isActive } = await request.json();
 
-    if (!id || id === "kategori") {
+    if (!id) {
         return new Response(JSON.stringify({ error: "ID kategori wajib diisi" }), {
             status: 400,
             headers: { "Content-Type": "application/json" },
