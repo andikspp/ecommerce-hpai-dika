@@ -66,7 +66,7 @@ export async function PUT(request) {
 
     try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const res = await axios.put(`${apiUrl}/api/kategori/${id}`, { name, description, isActive });
+        const res = await axios.put(`${apiUrl}/api/admin/kategori/${id}`, { name, description, isActive });
         return new Response(JSON.stringify(res.data), {
             status: res.status,
             headers: { "Content-Type": "application/json" },
