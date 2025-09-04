@@ -158,7 +158,7 @@ export default function AdminOrderPage() {
         if (!resi) return;
         setActionLoading(true);
         try {
-            await axios.patch(`/api/order?id=${selectedOrder.id}`, { status: "shipped", resi });
+            await axios.put(`/api/orders/${selectedOrder.id}/status`, { status: "shipped", resi });
             setOrders(orders =>
                 orders.map(o => o.id === selectedOrder.id ? { ...o, status: "shipped", resi } : o)
             );
@@ -176,7 +176,7 @@ export default function AdminOrderPage() {
         if (!rejectReason) return;
         setActionLoading(true);
         try {
-            await axios.patch(`/api/order?id=${selectedOrder.id}`, { status: "rejected", reason: rejectReason });
+            await axios.put(`/api/orders/${selectedOrder.id}/status`, { status: "rejected", reason: rejectReason });
             setOrders(orders =>
                 orders.map(o => o.id === selectedOrder.id ? { ...o, status: "rejected", reason: rejectReason } : o)
             );
