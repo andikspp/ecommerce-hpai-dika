@@ -328,7 +328,7 @@ export default function NavbarClient() {
                         productId: item.productId || item.id,
                         qty: item.qty,
                     }));
-                    await axios.put("/api/cart/save", { userId, cart: cartToSave });
+                    await axios.put(`/api/cart/${userId}`, { cart: cartToSave });
                 } else {
                     // Jika belum ada, buat baru dengan POST
                     console.log('Create cart for user:', userId)
