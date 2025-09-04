@@ -63,6 +63,7 @@ export async function PUT(request, { params }) {
     }
 
     try {
+        console.log('Updating category with ID:', id, 'and data:', { name, description, isActive });
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
         const res = await axios.put(`${apiUrl}/api/kategori/${id}`, {
             nama: name,
