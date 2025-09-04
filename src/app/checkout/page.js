@@ -161,7 +161,7 @@ export default function CheckoutPage() {
                             showConfirmButton: false
                         });
 
-                        axios.post("/api/order", orderData)
+                        axios.post("/api/orders", orderData)
                             .then((response) => {
                                 console.log("Order created successfully:", response.data);
                                 localStorage.setItem("lastOrder", JSON.stringify(response.data));
