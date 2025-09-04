@@ -308,7 +308,10 @@ export default function OrdersPage() {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-center">
                                             <Link
-                                                href={`/order-confirmation?id=${order.id}`}
+                                                href={{
+                                                    pathname: "/order-confirmation",
+                                                    query: { id: order.id }
+                                                }}
                                                 className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors duration-200"
                                             >
                                                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
