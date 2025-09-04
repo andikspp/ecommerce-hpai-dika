@@ -196,7 +196,9 @@ export default function ProductDetailPage() {
 
     // Mock data untuk multiple images (jika diperlukan)
     const productImages = [
-        produk.gambar?.startsWith("http") ? produk.gambar : `http://localhost:5000${produk.imageUrl || produk.gambar}`,
+        produk.gambar?.startsWith("http")
+            ? produk.gambar
+            : `${process.env.NEXT_PUBLIC_API_URL}${produk.imageUrl || produk.gambar}`,
         // Tambahkan gambar lain jika ada
     ];
 
