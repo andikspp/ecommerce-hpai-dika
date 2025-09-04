@@ -311,7 +311,7 @@ function EditProdukContent() {
                                     <div className="w-full h-40 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center relative overflow-hidden">
                                         {imageUrl ? (
                                             <img
-                                                src={imageUrl.startsWith("http") ? imageUrl : `http://localhost:5000${imageUrl}`}
+                                                src={imageUrl.startsWith("http") ? imageUrl : `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}${imageUrl}`}
                                                 alt="Gambar Produk"
                                                 className="w-full h-full object-cover"
                                             />
