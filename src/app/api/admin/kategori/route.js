@@ -75,6 +75,7 @@ export async function PUT(request, { params }) {
             headers: { "Content-Type": "application/json" },
         });
     } catch (error) {
+        console.log('Error updating category:', error);
         const status = error.response?.status || 500;
         const data = error.response?.data || { error: "Terjadi kesalahan pada server Next.js" };
         return new Response(JSON.stringify(data), {
