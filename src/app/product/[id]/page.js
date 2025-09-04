@@ -31,7 +31,7 @@ export default function ProductDetailPage() {
 
         const fetchReviews = async () => {
             try {
-                const res = await axios.get(`/api/review/produk/${id}`);
+                const res = await axios.get(`/api/reviews/product/${id}`);
 
                 if (res.data && res.data.success && Array.isArray(res.data.reviews)) {
                     setReviews(res.data.reviews);
