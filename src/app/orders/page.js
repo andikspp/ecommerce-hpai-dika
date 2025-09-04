@@ -28,7 +28,7 @@ export default function OrdersPage() {
                 }
 
                 // Kirim userId sebagai query param
-                const response = await axios.get(`/api/order?userId=${userId}`);
+                const response = await axios.get(`/api/orders/user/${userId}`);
                 if (response.data && Array.isArray(response.data)) {
                     setOrders(response.data);
                 } else {
@@ -240,8 +240,8 @@ export default function OrdersPage() {
                                 key={filter.key}
                                 onClick={() => setFilterStatus(filter.key)}
                                 className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${filterStatus === filter.key
-                                        ? "bg-green-600 text-white shadow-lg"
-                                        : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                                    ? "bg-green-600 text-white shadow-lg"
+                                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                                     }`}
                             >
                                 {filter.label} ({filter.count})
