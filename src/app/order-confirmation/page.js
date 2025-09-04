@@ -221,7 +221,7 @@ function OrderConfirmationContent() {
         setFinishing(true);
 
         try {
-            const res = await axios.patch(`/api/order?id=${order.id}`, {
+            const res = await axios.put(`/api/orders/${order.id}/status`, {
                 status: "delivered"
             });
 
