@@ -496,7 +496,7 @@ function OrderConfirmationContent() {
                             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 inline-block">
                                 <p className="text-sm font-medium">Nomor Pesanan</p>
                                 <p className="text-xl font-bold">
-                                    #{orderId}
+                                    #{order.noOrder}
                                 </p>
                             </div>
                         </div>
