@@ -17,7 +17,7 @@ export default function RegisterPage() {
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
-        
+
         // Check password strength
         if (e.target.name === "password") {
             checkPasswordStrength(e.target.value);
@@ -83,7 +83,7 @@ export default function RegisterPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-gray-900 dark:via-green-900 dark:to-emerald-900 flex items-center justify-center p-4">
-            
+
             {/* Background Pattern */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute -top-40 -right-40 w-80 h-80 bg-green-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
@@ -94,14 +94,14 @@ export default function RegisterPage() {
             <div className="relative w-full max-w-6xl mx-auto">
                 <div className="bg-white dark:bg-gray-800 shadow-2xl rounded-3xl overflow-hidden">
                     <div className="grid md:grid-cols-2">
-                        
+
                         {/* Left Section - Branding */}
                         <div className="relative bg-gradient-to-br from-green-600 to-emerald-600 dark:from-green-800 dark:to-emerald-800 p-8 lg:p-12 flex flex-col justify-center">
                             {/* Background decoration */}
                             <div className="absolute inset-0 bg-black/10"></div>
                             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
                             <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24"></div>
-                            
+
                             <div className="relative z-10">
                                 {/* Logo */}
                                 <div className="flex items-center space-x-3 mb-8">
@@ -120,7 +120,7 @@ export default function RegisterPage() {
                                         Bergabung Bersama Kami!
                                     </h3>
                                     <p className="text-green-100 text-lg leading-relaxed">
-                                        Daftar sekarang dan nikmati kemudahan berbelanja produk herbal HPAI 
+                                        Daftar sekarang dan nikmati kemudahan berbelanja produk herbal HPAI
                                         original dengan berbagai keuntungan eksklusif.
                                     </p>
                                 </div>
@@ -157,7 +157,7 @@ export default function RegisterPage() {
                         {/* Right Section - Register Form */}
                         <div className="p-8 lg:p-12 flex flex-col justify-center">
                             <div className="w-full max-w-md mx-auto">
-                                
+
                                 {/* Header */}
                                 <div className="text-center mb-8">
                                     <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
@@ -170,7 +170,7 @@ export default function RegisterPage() {
 
                                 {/* Form */}
                                 <form onSubmit={handleSubmit} className="space-y-6">
-                                    
+
                                     {/* Username Field */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -254,18 +254,17 @@ export default function RegisterPage() {
                                                 )}
                                             </button>
                                         </div>
-                                        
+
                                         {/* Password Strength */}
                                         {form.password && (
                                             <div className="mt-2">
                                                 <div className="flex items-center gap-2">
                                                     <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
-                                                        <div 
-                                                            className={`h-full transition-all duration-300 ${
-                                                                passwordStrength <= 2 ? 'bg-red-500' :
-                                                                passwordStrength <= 3 ? 'bg-yellow-500' :
-                                                                'bg-green-500'
-                                                            }`}
+                                                        <div
+                                                            className={`h-full transition-all duration-300 ${passwordStrength <= 2 ? 'bg-red-500' :
+                                                                    passwordStrength <= 3 ? 'bg-yellow-500' :
+                                                                        'bg-green-500'
+                                                                }`}
                                                             style={{ width: `${(passwordStrength / 5) * 100}%` }}
                                                         ></div>
                                                     </div>
@@ -314,7 +313,7 @@ export default function RegisterPage() {
                                                 )}
                                             </button>
                                         </div>
-                                        
+
                                         {/* Password Match Indicator */}
                                         {form.confirmPassword && (
                                             <div className="mt-2 flex items-center gap-2">
@@ -335,26 +334,6 @@ export default function RegisterPage() {
                                                 )}
                                             </div>
                                         )}
-                                    </div>
-
-                                    {/* Terms & Conditions */}
-                                    <div className="flex items-start">
-                                        <input
-                                            id="terms"
-                                            type="checkbox"
-                                            required
-                                            className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-1"
-                                        />
-                                        <label htmlFor="terms" className="ml-3 text-sm text-gray-700 dark:text-gray-300">
-                                            Saya setuju dengan{" "}
-                                            <a href="/terms" className="text-green-600 hover:text-green-500 font-medium">
-                                                Syarat & Ketentuan
-                                            </a>{" "}
-                                            dan{" "}
-                                            <a href="/privacy" className="text-green-600 hover:text-green-500 font-medium">
-                                                Kebijakan Privasi
-                                            </a>
-                                        </label>
                                     </div>
 
                                     {/* Submit Button */}
@@ -381,11 +360,10 @@ export default function RegisterPage() {
 
                                 {/* Message */}
                                 {message && (
-                                    <div className={`mt-6 p-4 rounded-xl text-sm font-medium ${
-                                        message.includes("berhasil") 
+                                    <div className={`mt-6 p-4 rounded-xl text-sm font-medium ${message.includes("berhasil")
                                             ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700"
                                             : "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700"
-                                    }`}>
+                                        }`}>
                                         <div className="flex items-center gap-2">
                                             <span>{message.includes("berhasil") ? "✅" : "❌"}</span>
                                             <span>{message}</span>

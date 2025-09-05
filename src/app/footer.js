@@ -150,23 +150,7 @@ function Footer() {
                         <div className="text-center md:text-left">
                             <p className="text-gray-400 text-sm">
                                 &copy; {currentYear} <span className="font-semibold text-green-300">Stokis HNI & HPAI Ika</span>.
-                                Semua hak cipta dilindungi.
                             </p>
-                        </div>
-
-                        <div className="flex items-center space-x-6">
-                            <a
-                                href="/privacy"
-                                className="text-gray-400 hover:text-green-300 text-sm transition-colors duration-200"
-                            >
-                                Kebijakan Privasi
-                            </a>
-                            <a
-                                href="/terms"
-                                className="text-gray-400 hover:text-green-300 text-sm transition-colors duration-200"
-                            >
-                                Syarat & Ketentuan
-                            </a>
                         </div>
                     </div>
                 </div>
