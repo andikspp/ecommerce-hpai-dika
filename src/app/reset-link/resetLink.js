@@ -37,7 +37,7 @@ function ResetPasswordContent() {
             }
 
             try {
-                await axios.post("/api/auth/validate-reset-token", { token });
+                await axios.post("/api/validate-reset-token", { token });
                 setTokenValid(true);
             } catch (error) {
                 setTokenValid(false);
@@ -81,9 +81,9 @@ function ResetPasswordContent() {
         setLoading(true);
 
         try {
-            await axios.post("/api/auth/reset-password", {
+            await axios.post("/api/reset-password", {
                 token,
-                newPassword
+                password: newPassword
             });
 
             await Swal.fire({

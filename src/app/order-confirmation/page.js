@@ -185,7 +185,7 @@ function OrderConfirmationContent() {
                 setReviewedProducts(prev => new Set([...prev, productId]));
 
                 try {
-                    const reviewsRes = await axios.get(`/api/review/order/${order.id}`);
+                    const reviewsRes = await axios.get(`/api/reviews/order/${order.id}`);
                     if (reviewsRes.data && reviewsRes.data.success) {
                         const reviewsData = reviewsRes.data.reviews;
                         setExistingReviews(reviewsData);

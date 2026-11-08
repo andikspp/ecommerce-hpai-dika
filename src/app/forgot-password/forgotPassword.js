@@ -18,10 +18,11 @@ export default function ForgotPasswordPage() {
 
         try {
             const response = await axios.post("/api/forgot-password", { email });
-            setSuccess("Link reset password telah dikirim ke email Anda.");
+            // Pesan dari server sengaja sama untuk email terdaftar maupun tidak
+            setSuccess(response.data?.message || "Jika email terdaftar, link reset password telah dikirim.");
             setEmail("");
         } catch (err) {
-            setError("Gagal mengirim link reset password. Pastikan email Anda terdaftar.");
+            setError(err.response?.data?.error || "Gagal memproses permintaan. Silakan coba lagi.");
         } finally {
             setLoading(false);
         }

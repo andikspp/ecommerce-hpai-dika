@@ -338,7 +338,7 @@ function EditProdukContent() {
                                             <input
                                                 id="image-input"
                                                 type="file"
-                                                accept="image/*"
+                                                accept="image/jpeg,image/png,image/webp"
                                                 className="hidden"
                                                 onChange={handleImageChange}
                                             />

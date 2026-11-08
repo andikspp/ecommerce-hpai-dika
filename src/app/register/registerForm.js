@@ -73,7 +73,7 @@ export default function RegisterPage() {
             setMessage("Registrasi berhasil! Silakan verifikasi email Anda.");
             // Redirect dengan delay untuk menampilkan pesan sukses
             setTimeout(() => {
-                window.location.href = "/verification-code";
+                window.location.href = `/verification-code?email=${encodeURIComponent(form.email)}`;
             }, 2000);
         } catch (error) {
             setMessage(error.response?.data?.error || "Registrasi gagal! Silakan coba lagi.");
