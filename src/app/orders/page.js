@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import axios from "axios";
+import { getCurrentUser } from "@/lib/session";
 
 export default function OrdersPage() {
     const [orders, setOrders] = useState([]);
@@ -11,15 +12,8 @@ export default function OrdersPage() {
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                // Ambil userId dari token JWT di localStorage
-                const token = localStorage.getItem("token");
-                let userId = null;
-                if (token) {
-                    try {
-                        const payload = JSON.parse(atob(token.split(".")[1]));
-                        userId = payload.id;
-                    } catch { }
-                }
+                // Ambil userId dari backend (sesi disimpan di cookie httpOnly)
+                const userId = (await getCurrentUser())?.id ?? null;
                 if (!userId) {
                     console.error("User tidak ditemukan atau belum login.");
                     setOrders([]);
@@ -27,7 +21,6 @@ export default function OrdersPage() {
                     return;
                 }
 
-                // Kirim userId sebagai query param
                 const response = await axios.get(`/api/orders/user/${userId}`);
                 if (response.data && Array.isArray(response.data)) {
                     setOrders(response.data);

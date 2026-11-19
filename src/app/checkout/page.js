@@ -3,6 +3,7 @@ import React, { use, useEffect, useState } from "react";
 import Link from "next/link";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { getCurrentUser } from "@/lib/session";
 
 export default function CheckoutPage() {
     const [cart, setCart] = useState([]);
@@ -15,81 +16,59 @@ export default function CheckoutPage() {
     const [step, setStep] = useState(1);
 
     useEffect(() => {
-        if (typeof window !== "undefined") {
-            const token = localStorage.getItem("token");
-            if (!token) {
-                window.location.href = "/login";
-            } else {
-                setLoading(false);
+        // Halaman ini dijaga src/middleware.js (harus login). Data user diambil dari backend
+        // memakai cookie sesi httpOnly yang dikirim browser otomatis.
+        const loadCheckout = async () => {
+            const me = await getCurrentUser();
+            if (!me) {
+                window.location.href = "/login?next=/checkout";
+                return;
             }
-        }
 
-        // Ambil cart dari localStorage
-        let localCart = [];
-        try {
-            localCart = JSON.parse(localStorage.getItem("cart") || "[]");
-        } catch {
-            localCart = [];
-        }
-        setCart(localCart);
-        if (localCart.length > 0) {
-            // Hitung total dari localCart
-            setTotal(localCart.reduce((sum, item) => {
-                const price = item.price !== undefined ? item.price : (item.product?.price || 0);
-                return sum + (price * item.qty);
-            }, 0));
-            setLoading(false);
-        } else {
-            // Jika cart kosong di localStorage, ambil total dari server
-            const token = localStorage.getItem("token");
-            if (token) {
-                const userId = JSON.parse(atob(token.split('.')[1])).id; // Ambil userId dari token
-                console.log("Fetching cart total for userId:", userId);
-                axios.get(`/api/cart/${userId}`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                })
-                    .then((res) => {
-                        // Backend mengembalikan { items: [{ productId, qty, product }] }
-                        const cartData = (res.data.items || []).map(item => ({
-                            ...item,
-                            id: item.productId,
-                            name: item.product?.name,
-                            price: item.product?.price || 0,
-                            imageUrl: item.product?.imageUrl,
-                        }));
-                        setCart(cartData);
-                        setTotal(cartData.reduce((sum, item) => sum + (item.price * item.qty), 0));
-                        setLoading(false);
-                    })
-                    .catch(() => {
-                        setTotal(0);
-                        setCart([]);
-                        setLoading(false);
-                    });
-            } else {
-                console.log("No token found, setting empty cart and total");
-                setTotal(0);
-                setCart([]);
-                setLoading(false);
+            // Ambil cart dari localStorage
+            let localCart = [];
+            try {
+                localCart = JSON.parse(localStorage.getItem("cart") || "[]");
+            } catch {
+                localCart = [];
             }
-        }
-        // Ambil user dari token jika ada (tetap seperti sebelumnya)
-        const token = localStorage.getItem("token");
-        if (token) {
-            axios.get("/api/profile", {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-                .then((res) => {
-                    setUser(res.data);
-                    setLoading(false);
-                })
-                .catch(() => {
-                    setUser(null);
-                    setLoading(false);
-                });
-        } else {
+
+            if (localCart.length > 0) {
+                setCart(localCart);
+                // Hitung total dari localCart (hanya tampilan; total final dihitung server)
+                setTotal(localCart.reduce((sum, item) => {
+                    const price = item.price !== undefined ? item.price : (item.product?.price || 0);
+                    return sum + (price * item.qty);
+                }, 0));
+            } else {
+                // Jika cart kosong di localStorage, ambil dari server
+                try {
+                    const res = await axios.get(`/api/cart/${me.id}`);
+                    // Backend mengembalikan { items: [{ productId, qty, product }] }
+                    const cartData = (res.data.items || []).map(item => ({
+                        ...item,
+                        id: item.productId,
+                        name: item.product?.name,
+                        price: item.product?.price || 0,
+                        imageUrl: item.product?.imageUrl,
+                    }));
+                    setCart(cartData);
+                    setTotal(cartData.reduce((sum, item) => sum + (item.price * item.qty), 0));
+                } catch {
+                    setCart([]);
+                    setTotal(0);
+                }
+            }
+
+            try {
+                const res = await axios.get("/api/profile");
+                setUser(res.data);
+            } catch {
+                setUser(null);
+            }
             setLoading(false);
-        }
+        };
+        loadCheckout();
     }, []);
 
     // skrip snap midtrans

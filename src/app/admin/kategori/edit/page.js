@@ -13,6 +13,7 @@ import {
     FaEdit
 } from "react-icons/fa";
 import Swal from "sweetalert2";
+import { logoutAdminAndRedirect } from "@/lib/session";
 
 // Component yang menggunakan useSearchParams
 function EditKategoriContent() {
@@ -31,12 +32,9 @@ function EditKategoriContent() {
 
     useEffect(() => {
         if (typeof window !== "undefined") {
-            const token = localStorage.getItem("adminToken");
-            if (!token) {
-                window.location.href = "/admin/login";
-            } else {
-                setIsChecking(false);
-            }
+            // Akses sudah dijaga src/middleware.js (cookie sesi admin); sesi kedaluwarsa
+            // ditangani interceptor di AxiosAuth.js (redirect ke /admin/login saat API membalas 401).
+            setIsChecking(false);
         }
     }, []);
 
@@ -72,9 +70,7 @@ function EditKategoriContent() {
 
     const handleLogout = (e) => {
         e.preventDefault();
-        localStorage.removeItem("adminToken");
-        localStorage.removeItem("adminUsername");
-        window.location.href = "/admin/login";
+        logoutAdminAndRedirect();
     };
 
     const handleInputChange = (e) => {

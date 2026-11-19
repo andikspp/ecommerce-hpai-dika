@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { getCurrentAdmin } from "@/lib/session";
 import {
     FaUser,
     FaLock,
@@ -22,13 +23,10 @@ export default function AdminLoginPage() {
 
     useEffect(() => {
         setMounted(true);
-        // Check if already logged in
-        if (typeof window !== "undefined") {
-            const token = localStorage.getItem("adminToken");
-            if (token) {
-                window.location.href = "/admin/dashboard";
-            }
-        }
+        // Sudah login (cookie sesi admin masih valid)? Langsung ke dashboard
+        getCurrentAdmin().then((admin) => {
+            if (admin) window.location.href = "/admin/dashboard";
+        });
     }, []);
 
     const handleChange = (e) => {
@@ -53,9 +51,7 @@ export default function AdminLoginPage() {
             const res = await axios.post("/api/admin/login", form);
             setMessage(res.data.message || "Login berhasil!");
 
-            if (res.data.token) {
-                localStorage.setItem("adminToken", res.data.token);
-            }
+            // Token disimpan backend di cookie httpOnly; username hanya untuk tampilan
             if (res.data.username) {
                 localStorage.setItem("adminUsername", res.data.username);
             }

@@ -35,6 +35,7 @@ import {
 import AdminSidebar from "@/components/AdminSidebar";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { logoutAdminAndRedirect } from "@/lib/session";
 
 const COLORS = ["#22c55e", "#16a34a", "#3b82f6", "#8b5cf6", "#f59e0b", "#ef4444"];
 
@@ -114,13 +115,10 @@ export default function AdminDashboardPage() {
 
     React.useEffect(() => {
         if (typeof window !== "undefined") {
-            const token = localStorage.getItem("adminToken");
-            if (!token) {
-                window.location.href = "/admin/login";
-            } else {
-                setIsChecking(false);
-                loadDashboardData();
-            }
+            // Akses sudah dijaga src/middleware.js (cookie sesi admin); sesi kedaluwarsa
+            // ditangani interceptor di AxiosAuth.js (redirect ke /admin/login saat API membalas 401).
+            setIsChecking(false);
+            loadDashboardData();
         }
     }, []);
 
@@ -169,9 +167,7 @@ export default function AdminDashboardPage() {
 
     const handleLogout = (e) => {
         e.preventDefault();
-        localStorage.removeItem("adminToken");
-        localStorage.removeItem("adminUsername");
-        window.location.href = "/admin/login";
+        logoutAdminAndRedirect();
     };
 
     // Generate chart data from real data

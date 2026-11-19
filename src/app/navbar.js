@@ -5,6 +5,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { useCart } from "./CartContext";
 import Link from "next/link";
+import { getCurrentUser, logoutUser } from "@/lib/session";
 
 function Navbar({ isLoggedIn, user, onLogout }) {
     const pathname = usePathname();
@@ -24,33 +25,30 @@ function Navbar({ isLoggedIn, user, onLogout }) {
     }, []);
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
-        let userId = null;
-        if (token) {
+        const updateCartCount = async () => {
+            // Ambil cart dari localStorage
+            const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+            if (cart.length > 0) {
+                // Jika ada di localStorage, pakai itu
+                const totalQty = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
+                setCartCount(totalQty);
+                return;
+            }
+            // Jika tidak ada di localStorage dan sedang login, fetch dari database
+            const me = await getCurrentUser();
+            if (!me) {
+                setCartCount(0);
+                return;
+            }
             try {
-                const payload = JSON.parse(atob(token.split(".")[1]));
-                userId = payload.id;
-            } catch { }
-        }
-
-        // Ambil cart dari localStorage
-        const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-        if (cart.length > 0) {
-            // Jika ada di localStorage, pakai itu
-            const totalQty = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
-            setCartCount(totalQty);
-        } else if (userId) {
-            // Jika tidak ada di localStorage, fetch dari database
-            axios.get(`/api/cart/${userId}`)
-                .then(res => {
-                    const items = res.data?.items || [];
-                    const totalQty = items.reduce((sum, item) => sum + (item.qty || 1), 0);
-                    setCartCount(totalQty);
-                })
-                .catch(() => setCartCount(0));
-        } else {
-            setCartCount(0);
-        }
+                const res = await axios.get(`/api/cart/${me.id}`);
+                const items = res.data?.items || [];
+                setCartCount(items.reduce((sum, item) => sum + (item.qty || 1), 0));
+            } catch {
+                setCartCount(0);
+            }
+        };
+        updateCartCount();
     }, [pathname, setCartCount]);
 
     // Tutup dropdown jika klik di luar
@@ -290,31 +288,21 @@ export default function NavbarClient() {
     const [user, setUser] = useState(null);
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
-        setIsLoggedIn(!!token);
-        if (token) {
-            try {
-                const payload = JSON.parse(atob(token.split(".")[1]));
-                setUser({ username: payload.username });
-            } catch {
-                setUser(null);
-            }
-        } else {
-            setUser(null);
-        }
+        // Status login ditanyakan ke backend (cookie httpOnly tidak bisa dibaca JavaScript)
+        let cancelled = false;
+        getCurrentUser().then((me) => {
+            if (cancelled) return;
+            setIsLoggedIn(!!me);
+            setUser(me ? { username: me.username } : null);
+        });
+        return () => { cancelled = true; };
     }, [pathname]);
 
     const handleLogout = async () => {
         // 1. Ambil cart dari localStorage
         const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-        const token = localStorage.getItem("token");
-        let userId = null;
-        if (token) {
-            try {
-                const payload = JSON.parse(atob(token.split(".")[1]));
-                userId = payload.id; // pastikan payload ada id user
-            } catch { }
-        }
+        const me = await getCurrentUser({ fresh: true });
+        const userId = me?.id ?? null;
 
         // 2. Simpan atau update cart ke database hanya jika ada userId dan cart tidak kosong
         if (userId && cart.length > 0) {
@@ -323,7 +311,6 @@ export default function NavbarClient() {
                 const check = await axios.get(`/api/cart/${userId}`);
                 if (check.data && check.data.id) {
                     // Jika sudah ada, update dengan PUT
-                    console.log("Updating existing cart for user:", userId, cart);
                     const cartToSave = cart.map(item => ({
                         productId: item.productId || item.id,
                         qty: item.qty,
@@ -331,8 +318,7 @@ export default function NavbarClient() {
                     await axios.put(`/api/cart/${userId}`, { cart: cartToSave });
                 } else {
                     // Jika belum ada, buat baru dengan POST
-                    console.log('Create cart for user:', userId)
-                    await axios.post("/api/cart/save", { userId, cart });
+                    await axios.post("/api/cart/save", { cart });
                 }
             } catch (e) {
                 console.error("Gagal menyimpan cart:", e);
@@ -348,8 +334,8 @@ export default function NavbarClient() {
         // 3. Bersihkan cart dari localStorage
         localStorage.removeItem("cart");
 
-        // 4. Lanjutkan proses logout
-        localStorage.removeItem("token");
+        // 4. Lanjutkan proses logout (hapus cookie sesi di server)
+        await logoutUser();
         setIsLoggedIn(false);
         setUser(null);
         window.location.href = "/login";

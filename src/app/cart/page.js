@@ -4,6 +4,7 @@ import Link from "next/link";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useCart } from "../CartContext";
+import { getCurrentUser } from "@/lib/session";
 
 export default function CartPage() {
     const [cart, setCart] = useState([]);
@@ -14,14 +15,7 @@ export default function CartPage() {
     useEffect(() => {
         const fetchCart = async () => {
             const localCart = JSON.parse(localStorage.getItem("cart") || "[]");
-            const token = localStorage.getItem("token");
-            let userId = null;
-            if (token) {
-                try {
-                    const payload = JSON.parse(atob(token.split(".")[1]));
-                    userId = payload.id;
-                } catch { }
-            }
+            const userId = (await getCurrentUser())?.id ?? null;
 
             if (userId) {
                 let dbCart = [];
@@ -97,17 +91,9 @@ export default function CartPage() {
             setCartCount(totalQty);
 
             if (newCart.length === 0) {
-                const token = localStorage.getItem("token");
-                let userId = null;
-                if (token) {
+                if (await getCurrentUser()) {
                     try {
-                        const payload = JSON.parse(atob(token.split(".")[1]));
-                        userId = payload.id;
-                    } catch { }
-                }
-                if (userId) {
-                    try {
-                        await axios.post("/api/cart/save", { userId, cart: [] });
+                        await axios.post("/api/cart/save", { cart: [] });
                     } catch (e) {
                         console.error("Gagal menghapus cart di backend:", e);
                     }
@@ -154,7 +140,7 @@ export default function CartPage() {
         setCartCount(totalQty);
     };
 
-    const handleCheckout = () => {
+    const handleCheckout = async () => {
         // Validasi stok sebelum checkout
         const invalidItems = cart.filter(item => {
             const productId = item.productId || item.id;
@@ -186,8 +172,7 @@ export default function CartPage() {
             return;
         }
 
-        const token = localStorage.getItem("token");
-        if (!token) {
+        if (!(await getCurrentUser())) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Anda belum login',
@@ -202,7 +187,7 @@ export default function CartPage() {
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = "/login";
+                    window.location.href = "/login?next=/checkout";
                 }
             });
             return;

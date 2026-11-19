@@ -20,12 +20,14 @@ export default function LoginForm() {
         try {
             const res = await axios.post("/api/login", form);
             setMessage(res.data.message || "Login berhasil!");
-            if (res.data.token) {
-                localStorage.setItem("token", res.data.token);
-            }
+            // Token disimpan backend di cookie httpOnly, tidak perlu disimpan di sini.
+            // Kembali ke halaman asal (?next=...) jika ada, hanya untuk path internal.
+            const next = new URLSearchParams(window.location.search).get("next");
+            const isInternalPath = next && next.startsWith("/") && !next.startsWith("//") && !next.startsWith("/\\");
+            const target = isInternalPath ? next : "/";
             // Redirect dengan delay untuk menampilkan pesan sukses
             setTimeout(() => {
-                window.location.href = "/";
+                window.location.href = target;
             }, 1500);
         } catch (err) {
             setMessage(
