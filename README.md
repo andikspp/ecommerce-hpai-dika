@@ -69,6 +69,10 @@ src/app/
   admin/                  # dashboard, produk, kategori, order, user
 ```
 
+## Docker
+
+[`Dockerfile`](Dockerfile) membangun image produksi (output `standalone`, user non-root). Semua `NEXT_PUBLIC_*` dan `BACKEND_URL` tertanam saat build, jadi berikan sebagai build arg. Untuk menjalankan seluruh aplikasi sekaligus, pakai `docker-compose.yml` di repo backend.
+
 ## Deploy (Vercel)
 
 1. Deploy bersama backend versi yang berpasangan.
