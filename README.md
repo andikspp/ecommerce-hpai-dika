@@ -36,7 +36,7 @@ Lihat [`.env.example`](.env.example):
 | Variabel | Fungsi |
 |---|---|
 | `NEXT_PUBLIC_API_URL` | URL backend dari sisi **browser**: tujuan rewrite `/api/*` dan URL gambar lama `/uploads/...` |
-| `BACKEND_URL` | Opsional: URL backend khusus untuk rewrite jika berbeda |
+| `BACKEND_URL` | Opsional: URL backend dari sisi **server Next** (rewrite dan Server Component), mis. alamat internal `http://backend:5000` |
 | `NEXT_PUBLIC_MIDTRANS_CLIENT_KEY` | Client Key Midtrans (memang publik) |
 | `NEXT_PUBLIC_MIDTRANS_SNAP_URL` | `snap.js` sandbox atau production |
 
@@ -50,6 +50,13 @@ URL backend untuk rewrite dibaca **saat build**. Di Vercel, isi env-nya sebelum 
 - [`src/middleware.js`](src/middleware.js) mengalihkan halaman `/admin/*`, `/checkout`, `/orders`, `/profile`, dan `/order-confirmation` ke halaman login jika cookie sesi tidak ada.
 - [`AxiosAuth.js`](src/app/AxiosAuth.js) mengirim header `X-Auth-Scope: admin` dari halaman `/admin` dan mengarahkan ke `/admin/login` saat sesi admin habis.
 - URL gambar produk selalu dibentuk lewat [`productImageSrc()`](src/lib/imageUrl.js): URL `https://...` (object storage) dipakai apa adanya, path lama `/uploads/...` digabung dengan `NEXT_PUBLIC_API_URL`.
+
+## Halaman yang dirender di server
+
+Katalog (`/product`) dan detail produk (`/product/[id]`) adalah Server Component: data diambil di server lewat [`src/lib/serverApi.js`](src/lib/serverApi.js), sehingga nama, harga, dan deskripsi sudah ada di HTML (baik untuk SEO dan link yang dibagikan). Bagian interaktif (keranjang, mode tampilan, filter) ada di komponen client terpisah.
+
+- Katalog memakai pagination dari backend (12 produk per halaman). Pencarian, kategori, urutan, dan halaman disimpan di URL: `/product?q=madu&kategori=2&sort=price-low&page=2`.
+- Detail produk punya judul, deskripsi, dan gambar Open Graph sendiri. Produk nonaktif tetap bisa dibuka tetapi diberi `noindex`.
 
 ## Checkout
 
