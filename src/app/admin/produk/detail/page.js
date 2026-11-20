@@ -23,6 +23,7 @@ import {
 } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { logoutAdminAndRedirect } from "@/lib/session";
+import { productImageSrc } from "@/lib/imageUrl";
 
 function DetailProdukContent() {
     const router = useRouter();
@@ -267,9 +268,7 @@ function DetailProdukContent() {
                                                 )}
                                                 <img
                                                     src={
-                                                        product.imageUrl.startsWith("http")
-                                                            ? product.imageUrl
-                                                            : `${process.env.NEXT_PUBLIC_API_URL}${product.imageUrl}`
+                                                        productImageSrc(product.imageUrl)
                                                     }
                                                     alt={product.name}
                                                     className="w-full h-full object-cover"

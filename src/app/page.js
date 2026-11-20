@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
+import { productImageSrc } from "@/lib/imageUrl";
 
 export default function Homepage() {
   const [produk, setProduk] = useState([]);
@@ -171,9 +172,7 @@ export default function Homepage() {
                 <div className="relative overflow-hidden">
                   <img
                     src={
-                      item.gambar?.startsWith("http")
-                        ? item.gambar
-                        : `${process.env.NEXT_PUBLIC_API_URL}${item.imageUrl || item.gambar}`
+                      productImageSrc(item.imageUrl || item.gambar)
                     }
                     alt={item.name}
                     className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"

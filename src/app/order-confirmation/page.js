@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { productImageSrc } from "@/lib/imageUrl";
 
 // Component yang menggunakan useSearchParams
 function OrderConfirmationContent() {
@@ -590,9 +591,7 @@ function OrderConfirmationContent() {
                                                 <div className="w-16 h-16 bg-gray-200 dark:bg-gray-600 rounded-lg overflow-hidden">
                                                     {item.product?.imageUrl ? (
                                                         <img
-                                                            src={item.product.imageUrl.startsWith("http")
-                                                                ? item.product.imageUrl
-                                                                : `${process.env.NEXT_PUBLIC_API_URL}${item.product.imageUrl}`}
+                                                            src={productImageSrc(item.product.imageUrl)}
                                                             alt={item.product.name}
                                                             className="w-full h-full object-cover"
                                                         />
@@ -687,9 +686,7 @@ function OrderConfirmationContent() {
                                                 <div className="w-16 h-16 bg-gray-200 dark:bg-gray-600 rounded-lg overflow-hidden">
                                                     {item.product?.imageUrl ? (
                                                         <img
-                                                            src={item.product.imageUrl.startsWith("http")
-                                                                ? item.product.imageUrl
-                                                                : `${process.env.NEXT_PUBLIC_API_URL}${item.product.imageUrl}`}
+                                                            src={productImageSrc(item.product.imageUrl)}
                                                             alt={item.product.name}
                                                             className="w-full h-full object-cover"
                                                         />

@@ -5,6 +5,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { useCart } from "../CartContext";
 import { getCurrentUser } from "@/lib/session";
+import { productImageSrc } from "@/lib/imageUrl";
 
 export default function CartPage() {
     const [cart, setCart] = useState([]);
@@ -392,9 +393,7 @@ function CartItem({ item, product, onQtyChange, onRemove }) {
                 {/* Product Image */}
                 <img
                     src={
-                        product.imageUrl?.startsWith("http")
-                            ? product.imageUrl
-                            : `${process.env.NEXT_PUBLIC_API_URL}${product.imageUrl || ""}`
+                        productImageSrc(product.imageUrl)
                     }
                     alt={product.name || "Produk"}
                     className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-600"

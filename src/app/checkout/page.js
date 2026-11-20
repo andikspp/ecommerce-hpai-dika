@@ -4,6 +4,7 @@ import Link from "next/link";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { getCurrentUser } from "@/lib/session";
+import { productImageSrc } from "@/lib/imageUrl";
 
 export default function CheckoutPage() {
     const [cart, setCart] = useState([]);
@@ -448,9 +449,7 @@ export default function CheckoutPage() {
                                                 <div key={item.id} className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
                                                     <img
                                                         src={
-                                                            product.imageUrl?.startsWith("http")
-                                                                ? product.imageUrl
-                                                                : `${process.env.NEXT_PUBLIC_API_URL}${product.imageUrl || ""}`
+                                                            productImageSrc(product.imageUrl)
                                                         }
                                                         alt={product.name || "Produk"}
                                                         className="w-16 h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-600"

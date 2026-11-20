@@ -33,7 +33,7 @@ Lihat [`.env.example`](.env.example):
 
 | Variabel | Fungsi |
 |---|---|
-| `NEXT_PUBLIC_API_URL` | URL backend: tujuan rewrite `/api/*` dan URL gambar produk |
+| `NEXT_PUBLIC_API_URL` | URL backend dari sisi **browser**: tujuan rewrite `/api/*` dan URL gambar lama `/uploads/...` |
 | `BACKEND_URL` | Opsional: URL backend khusus untuk rewrite jika berbeda |
 | `NEXT_PUBLIC_MIDTRANS_CLIENT_KEY` | Client Key Midtrans (memang publik) |
 | `NEXT_PUBLIC_MIDTRANS_SNAP_URL` | `snap.js` sandbox atau production |
@@ -43,11 +43,11 @@ URL backend untuk rewrite dibaca **saat build**. Di Vercel, isi env-nya sebelum 
 ## Cara frontend memanggil backend
 
 - Semua halaman memanggil path relatif `/api/...`, misalnya `axios.get("/api/produk")`.
-- [`next.config.mjs`](next.config.mjs) meneruskan `/api/*` apa adanya ke backend, termasuk header `Authorization`. Tidak ada lagi file proxy di `src/app/api`. Tambahkan endpoint di backend, bukan di sini.
-- [`AxiosAuth.js`](src/app/AxiosAuth.js) memasang token otomatis ke setiap request `/api/...`:
-  - halaman di bawah `/admin` memakai `localStorage.adminToken`
-  - halaman lain memakai `localStorage.token`
-- Gambar produk dimuat langsung dari `${NEXT_PUBLIC_API_URL}/uploads/...`.
+- [`next.config.mjs`](next.config.mjs) meneruskan `/api/*` apa adanya ke backend, termasuk cookie. Tidak ada file proxy di `src/app/api`. Tambahkan endpoint di backend, bukan di sini.
+- Login memakai **cookie httpOnly** yang dipasang backend; JavaScript tidak pernah memegang token. Siapa yang sedang login diambil dari `/api/me` dan `/api/admin/me` lewat [`src/lib/session.js`](src/lib/session.js).
+- [`src/middleware.js`](src/middleware.js) mengalihkan halaman `/admin/*`, `/checkout`, `/orders`, `/profile`, dan `/order-confirmation` ke halaman login jika cookie sesi tidak ada.
+- [`AxiosAuth.js`](src/app/AxiosAuth.js) mengirim header `X-Auth-Scope: admin` dari halaman `/admin` dan mengarahkan ke `/admin/login` saat sesi admin habis.
+- URL gambar produk selalu dibentuk lewat [`productImageSrc()`](src/lib/imageUrl.js): URL `https://...` (object storage) dipakai apa adanya, path lama `/uploads/...` digabung dengan `NEXT_PUBLIC_API_URL`.
 
 ## Checkout
 
