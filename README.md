@@ -27,8 +27,6 @@ Restart `npm run dev` setiap kali `.env.local` diubah.
 | `npm start` | Jalankan hasil build |
 | `npm run lint` | ESLint |
 
-CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) menjalankan lint, build, dan build image Docker di setiap push ke `main` dan setiap pull request.
-
 ## Environment
 
 Lihat [`.env.example`](.env.example):
