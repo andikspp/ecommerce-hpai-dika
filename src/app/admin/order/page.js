@@ -18,6 +18,7 @@ import {
     FaDollarSign
 } from "react-icons/fa";
 import AdminSidebar from "@/components/AdminSidebar";
+import { logoutAdminAndRedirect } from "@/lib/session";
 
 export default function AdminOrderPage() {
     const [orders, setOrders] = useState([]);
@@ -35,19 +36,16 @@ export default function AdminOrderPage() {
 
     useEffect(() => {
         if (typeof window !== "undefined") {
-            const token = localStorage.getItem("adminToken");
-            if (!token) {
-                window.location.href = "/admin/login";
-            } else {
-                setIsChecking(false);
-                fetchOrders();
-            }
+            // Akses sudah dijaga src/middleware.js (cookie sesi admin); sesi kedaluwarsa
+            // ditangani interceptor di AxiosAuth.js (redirect ke /admin/login saat API membalas 401).
+            setIsChecking(false);
+            fetchOrders();
         }
     }, []);
 
     const fetchOrders = async () => {
         try {
-            const response = await axios.get("/api/order");
+            const response = await axios.get("/api/orders");
             setOrders(Array.isArray(response.data) ? response.data : []);
         } catch {
             setOrders([]);
@@ -57,9 +55,7 @@ export default function AdminOrderPage() {
 
     const handleLogout = (e) => {
         e.preventDefault();
-        localStorage.removeItem("adminToken");
-        localStorage.removeItem("adminUsername");
-        window.location.href = "/admin/login";
+        logoutAdminAndRedirect();
     };
 
     function renderStatus(status) {
@@ -141,7 +137,7 @@ export default function AdminOrderPage() {
                 setActionLoading(false);
                 return;
             }
-            await axios.patch(`/api/order?id=${selectedOrder.id}`, { status });
+            await axios.put(`/api/orders/${selectedOrder.id}/status`, { status });
             setOrders(orders =>
                 orders.map(o => o.id === selectedOrder.id ? { ...o, status } : o)
             );
@@ -158,7 +154,7 @@ export default function AdminOrderPage() {
         if (!resi) return;
         setActionLoading(true);
         try {
-            await axios.patch(`/api/order?id=${selectedOrder.id}`, { status: "shipped", resi });
+            await axios.put(`/api/orders/${selectedOrder.id}/status`, { status: "shipped", resi });
             setOrders(orders =>
                 orders.map(o => o.id === selectedOrder.id ? { ...o, status: "shipped", resi } : o)
             );
@@ -176,7 +172,7 @@ export default function AdminOrderPage() {
         if (!rejectReason) return;
         setActionLoading(true);
         try {
-            await axios.patch(`/api/order?id=${selectedOrder.id}`, { status: "rejected", reason: rejectReason });
+            await axios.put(`/api/orders/${selectedOrder.id}/status`, { status: "rejected", reason: rejectReason });
             setOrders(orders =>
                 orders.map(o => o.id === selectedOrder.id ? { ...o, status: "rejected", reason: rejectReason } : o)
             );

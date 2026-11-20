@@ -35,6 +35,7 @@ import {
 import AdminSidebar from "@/components/AdminSidebar";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { logoutAdminAndRedirect } from "@/lib/session";
 
 const COLORS = ["#22c55e", "#16a34a", "#3b82f6", "#8b5cf6", "#f59e0b", "#ef4444"];
 
@@ -114,13 +115,10 @@ export default function AdminDashboardPage() {
 
     React.useEffect(() => {
         if (typeof window !== "undefined") {
-            const token = localStorage.getItem("adminToken");
-            if (!token) {
-                window.location.href = "/admin/login";
-            } else {
-                setIsChecking(false);
-                loadDashboardData();
-            }
+            // Akses sudah dijaga src/middleware.js (cookie sesi admin); sesi kedaluwarsa
+            // ditangani interceptor di AxiosAuth.js (redirect ke /admin/login saat API membalas 401).
+            setIsChecking(false);
+            loadDashboardData();
         }
     }, []);
 
@@ -129,9 +127,9 @@ export default function AdminDashboardPage() {
         try {
             // Fetch data dari semua endpoint
             const [productsRes, usersRes, categoriesRes] = await Promise.all([
-                axios.get('/api/admin/produk'),
+                axios.get('/api/produk'),
                 axios.get('/api/admin/user'),
-                axios.get('/api/admin/kategori')
+                axios.get('/api/kategori')
             ]);
 
             const productsData = productsRes.data || [];
@@ -169,9 +167,7 @@ export default function AdminDashboardPage() {
 
     const handleLogout = (e) => {
         e.preventDefault();
-        localStorage.removeItem("adminToken");
-        localStorage.removeItem("adminUsername");
-        window.location.href = "/admin/login";
+        logoutAdminAndRedirect();
     };
 
     // Generate chart data from real data
@@ -501,8 +497,8 @@ export default function AdminDashboardPage() {
                                         </div>
                                         <div className="text-right">
                                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${user.isVerified
-                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                                                    : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
+                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                                                : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
                                                 }`}>
                                                 {user.isVerified ? 'Verified' : 'Pending'}
                                             </span>
@@ -548,8 +544,8 @@ export default function AdminDashboardPage() {
                                         </div>
                                         <div className="text-right">
                                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${product.isActive
-                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                                                    : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
+                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                                                : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
                                                 }`}>
                                                 {product.isActive ? 'Aktif' : 'Non-aktif'}
                                             </span>

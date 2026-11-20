@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import AdminSidebar from "@/components/AdminSidebar";
 import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -22,8 +22,10 @@ import {
     FaHashtag
 } from "react-icons/fa";
 import Swal from "sweetalert2";
+import { logoutAdminAndRedirect } from "@/lib/session";
+import { productImageSrc } from "@/lib/imageUrl";
 
-export default function DetailProdukPage() {
+function DetailProdukContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const id = searchParams.get("id");
@@ -35,23 +37,15 @@ export default function DetailProdukPage() {
 
     useEffect(() => {
         if (typeof window !== "undefined") {
-            const token = localStorage.getItem("adminToken");
-            if (!token) {
-                window.location.href = "/admin/login";
-            } else {
-                setIsChecking(false);
-            }
+            // Akses sudah dijaga src/middleware.js (cookie sesi admin); sesi kedaluwarsa
+            // ditangani interceptor di AxiosAuth.js (redirect ke /admin/login saat API membalas 401).
+            setIsChecking(false);
         }
     }, []);
 
-    useEffect(() => {
-        if (isChecking || !id) return;
-        fetchProduct();
-    }, [id, isChecking]);
-
-    const fetchProduct = async () => {
+    const fetchProduct = useCallback(async () => {
         try {
-            const response = await axios.get(`/api/admin/produk/${id}`);
+            const response = await axios.get(`/api/produk/${id}`);
             setProduct(response.data);
         } catch (error) {
             Swal.fire({
@@ -67,13 +61,16 @@ export default function DetailProdukPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [id, router]);
+
+    useEffect(() => {
+        if (isChecking || !id) return;
+        fetchProduct();
+    }, [id, isChecking, fetchProduct]);
 
     const handleLogout = (e) => {
         e.preventDefault();
-        localStorage.removeItem("adminToken");
-        localStorage.removeItem("adminUsername");
-        window.location.href = "/admin/login";
+        logoutAdminAndRedirect();
     };
 
     const handleEdit = () => {
@@ -99,7 +96,7 @@ export default function DetailProdukPage() {
 
         if (result.isConfirmed) {
             try {
-                await axios.delete(`/api/admin/produk/${id}`);
+                await axios.delete(`/api/produk/${id}`);
                 await Swal.fire({
                     icon: "success",
                     title: "Berhasil!",
@@ -145,7 +142,7 @@ export default function DetailProdukPage() {
 
         if (result.isConfirmed) {
             try {
-                await axios.patch(`/api/admin/produk?id=${id}`, {
+                await axios.patch(`/api/produk/${id}/status`, {
                     isActive: !product.isActive,
                 });
                 setProduct(prev => ({ ...prev, isActive: !prev.isActive }));
@@ -270,7 +267,9 @@ export default function DetailProdukPage() {
                                                     </div>
                                                 )}
                                                 <img
-                                                    src={product.imageUrl.startsWith("http") ? product.imageUrl : `http://localhost:5000${product.imageUrl}`}
+                                                    src={
+                                                        productImageSrc(product.imageUrl)
+                                                    }
                                                     alt={product.name}
                                                     className="w-full h-full object-cover"
                                                     onLoad={() => setImageLoading(false)}
@@ -363,28 +362,28 @@ export default function DetailProdukPage() {
                                         </div>
 
                                         <div className={`rounded-lg p-4 ${stockStatus.color === 'red' ? 'bg-red-50 dark:bg-red-900/20' :
-                                                stockStatus.color === 'orange' ? 'bg-orange-50 dark:bg-orange-900/20' :
-                                                    'bg-green-50 dark:bg-green-900/20'
+                                            stockStatus.color === 'orange' ? 'bg-orange-50 dark:bg-orange-900/20' :
+                                                'bg-green-50 dark:bg-green-900/20'
                                             }`}>
                                             <div className="flex items-center gap-2 mb-1">
                                                 <FaWarehouse className={`w-4 h-4 ${stockStatus.color === 'red' ? 'text-red-600' :
-                                                        stockStatus.color === 'orange' ? 'text-orange-600' :
-                                                            'text-green-600'
+                                                    stockStatus.color === 'orange' ? 'text-orange-600' :
+                                                        'text-green-600'
                                                     }`} />
                                                 <span className={`text-xs font-medium ${stockStatus.color === 'red' ? 'text-red-600 dark:text-red-400' :
-                                                        stockStatus.color === 'orange' ? 'text-orange-600 dark:text-orange-400' :
-                                                            'text-green-600 dark:text-green-400'
+                                                    stockStatus.color === 'orange' ? 'text-orange-600 dark:text-orange-400' :
+                                                        'text-green-600 dark:text-green-400'
                                                     }`}>Stok</span>
                                             </div>
                                             <p className={`text-lg font-bold ${stockStatus.color === 'red' ? 'text-red-700 dark:text-red-300' :
-                                                    stockStatus.color === 'orange' ? 'text-orange-700 dark:text-orange-300' :
-                                                        'text-green-700 dark:text-green-300'
+                                                stockStatus.color === 'orange' ? 'text-orange-700 dark:text-orange-300' :
+                                                    'text-green-700 dark:text-green-300'
                                                 }`}>
                                                 {product.stock} unit
                                             </p>
                                             <p className={`text-xs ${stockStatus.color === 'red' ? 'text-red-600 dark:text-red-400' :
-                                                    stockStatus.color === 'orange' ? 'text-orange-600 dark:text-orange-400' :
-                                                        'text-green-600 dark:text-green-400'
+                                                stockStatus.color === 'orange' ? 'text-orange-600 dark:text-orange-400' :
+                                                    'text-green-600 dark:text-green-400'
                                                 }`}>
                                                 {stockStatus.text}
                                             </p>
@@ -457,8 +456,8 @@ export default function DetailProdukPage() {
                                 <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
                                     <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Status publikasi:</span>
                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.isActive
-                                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                                            : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
+                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                                        : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
                                         }`}>
                                         {product.isActive ? 'Dipublikasikan' : 'Draft'}
                                     </span>
@@ -489,8 +488,8 @@ export default function DetailProdukPage() {
                             <button
                                 onClick={handleToggleStatus}
                                 className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold shadow-lg transition-all duration-200 transform hover:scale-105 ${product.isActive
-                                        ? 'bg-orange-600 hover:bg-orange-700 text-white'
-                                        : 'bg-green-600 hover:bg-green-700 text-white'
+                                    ? 'bg-orange-600 hover:bg-orange-700 text-white'
+                                    : 'bg-green-600 hover:bg-green-700 text-white'
                                     }`}
                             >
                                 {product.isActive ? <FaToggleOff className="w-4 h-4" /> : <FaToggleOn className="w-4 h-4" />}
@@ -508,5 +507,31 @@ export default function DetailProdukPage() {
                 </div>
             </main>
         </div>
+    );
+}
+
+// Loading component untuk fallback
+function DetailProdukLoading() {
+    return (
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+            <div className="text-center">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600 mx-auto mb-6"></div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                    Memuat Detail Produk...
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400">
+                    Mohon tunggu sebentar
+                </p>
+            </div>
+        </div>
+    );
+}
+
+// Main component dengan Suspense wrapper
+export default function DetailProdukPage() {
+    return (
+        <Suspense fallback={<DetailProdukLoading />}>
+            <DetailProdukContent />
+        </Suspense>
     );
 }

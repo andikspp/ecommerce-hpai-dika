@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import axios from "axios";
+import { getCurrentUser } from "@/lib/session";
 
 export default function OrdersPage() {
     const [orders, setOrders] = useState([]);
@@ -11,15 +12,8 @@ export default function OrdersPage() {
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                // Ambil userId dari token JWT di localStorage
-                const token = localStorage.getItem("token");
-                let userId = null;
-                if (token) {
-                    try {
-                        const payload = JSON.parse(atob(token.split(".")[1]));
-                        userId = payload.id;
-                    } catch { }
-                }
+                // Ambil userId dari backend (sesi disimpan di cookie httpOnly)
+                const userId = (await getCurrentUser())?.id ?? null;
                 if (!userId) {
                     console.error("User tidak ditemukan atau belum login.");
                     setOrders([]);
@@ -27,8 +21,7 @@ export default function OrdersPage() {
                     return;
                 }
 
-                // Kirim userId sebagai query param
-                const response = await axios.get(`/api/order?userId=${userId}`);
+                const response = await axios.get(`/api/orders/user/${userId}`);
                 if (response.data && Array.isArray(response.data)) {
                     setOrders(response.data);
                 } else {
@@ -240,8 +233,8 @@ export default function OrdersPage() {
                                 key={filter.key}
                                 onClick={() => setFilterStatus(filter.key)}
                                 className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${filterStatus === filter.key
-                                        ? "bg-green-600 text-white shadow-lg"
-                                        : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                                    ? "bg-green-600 text-white shadow-lg"
+                                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                                     }`}
                             >
                                 {filter.label} ({filter.count})
@@ -308,7 +301,10 @@ export default function OrdersPage() {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-center">
                                             <Link
-                                                href={`/order-confirmation?id=${order.id}`}
+                                                href={{
+                                                    pathname: "/order-confirmation",
+                                                    query: { id: order.id }
+                                                }}
                                                 className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors duration-200"
                                             >
                                                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

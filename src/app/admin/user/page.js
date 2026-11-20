@@ -18,6 +18,7 @@ import {
 } from "react-icons/fa";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { logoutAdminAndRedirect } from "@/lib/session";
 
 export default function AdminUserPage() {
     const [users, setUsers] = useState([]);
@@ -30,12 +31,9 @@ export default function AdminUserPage() {
 
     useEffect(() => {
         if (typeof window !== "undefined") {
-            const token = localStorage.getItem("adminToken");
-            if (!token) {
-                window.location.href = "/admin/login";
-            } else {
-                setIsChecking(false);
-            }
+            // Akses sudah dijaga src/middleware.js (cookie sesi admin); sesi kedaluwarsa
+            // ditangani interceptor di AxiosAuth.js (redirect ke /admin/login saat API membalas 401).
+            setIsChecking(false);
         }
     }, []);
 
@@ -56,9 +54,7 @@ export default function AdminUserPage() {
 
     const handleLogout = (e) => {
         e.preventDefault();
-        localStorage.removeItem("adminToken");
-        localStorage.removeItem("adminUsername");
-        window.location.href = "/admin/login";
+        logoutAdminAndRedirect();
     };
 
     const handleDetail = (user) => {
@@ -89,7 +85,7 @@ export default function AdminUserPage() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    const response = await axios.delete(`/api/admin/user?id=${id}`);
+                    const response = await axios.delete(`/api/admin/user/${id}`);
                     if (response.status === 200) {
                         setUsers(users.filter((user) => user.id !== id));
                         Swal.fire({
@@ -104,6 +100,7 @@ export default function AdminUserPage() {
                         });
                     }
                 } catch (error) {
+                    console.error("Error deleting user:", error);
                     Swal.fire({
                         icon: "error",
                         title: "Gagal!",

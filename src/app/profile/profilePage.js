@@ -31,19 +31,10 @@ export default function ProfilePage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-        if (!token) {
-            router.replace("/login");
-            return;
-        }
-
+        // Halaman dijaga src/middleware.js; sesi tidak valid -> API 401 -> kembali ke login
         const fetchProfile = async () => {
             try {
-                const response = await axios.get("/api/profile", {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
+                const response = await axios.get("/api/profile");
                 setUser(response.data);
             } catch (error) {
                 console.error(error);

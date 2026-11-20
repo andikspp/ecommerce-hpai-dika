@@ -2,12 +2,13 @@ import React from "react";
 import { FaBoxOpen, FaFolderOpen, FaUsers, FaSignOutAlt } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
+import { logoutAdmin } from "@/lib/session";
 
 export default function AdminSidebar() {
     const router = useRouter();
 
-    const handleLogout = () => {
-        localStorage.removeItem("adminToken");
+    const handleLogout = async () => {
+        await logoutAdmin();
         Swal.fire({
             icon: "success",
             title: "Logout berhasil",

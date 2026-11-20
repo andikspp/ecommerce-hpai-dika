@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 export const metadata = {
     title: "Tentang Kami - Distributor HPAI Ika",
@@ -223,7 +224,7 @@ export default function AboutPage() {
                         Bergabunglah dengan ribuan pelanggan yang telah merasakan manfaat produk herbal HPAI berkualitas
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <a
+                        <Link
                             href="/product"
                             className="inline-flex items-center px-8 py-4 bg-white text-green-600 font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
                         >
@@ -231,7 +232,7 @@ export default function AboutPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                             </svg>
                             Lihat Produk
-                        </a>
+                        </Link>
                         <a
                             href="https://wa.me/6282294317043"
                             target="_blank"

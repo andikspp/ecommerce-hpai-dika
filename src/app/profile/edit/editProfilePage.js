@@ -24,16 +24,10 @@ export default function EditProfilePage() {
     const [success, setSuccess] = useState("");
 
     useEffect(() => {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-        if (!token) {
-            router.replace("/login");
-            return;
-        }
+        // Halaman dijaga src/middleware.js; sesi tidak valid -> API 401 -> kembali ke login
         const fetchProfile = async () => {
             try {
-                const res = await axios.get("/api/profile", {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
+                const res = await axios.get("/api/profile");
 
                 setForm({
                     name: res.data.name || "",
@@ -47,7 +41,11 @@ export default function EditProfilePage() {
                     kelurahan: res.data.kelurahan || "",
                     kodePos: res.data.kodePos || "",
                 });
-            } catch {
+            } catch (err) {
+                if (err.response?.status === 401) {
+                    router.replace("/login?next=/profile/edit");
+                    return;
+                }
                 setError("Gagal mengambil data profil");
             } finally {
                 setLoading(false);
@@ -69,8 +67,6 @@ export default function EditProfilePage() {
         setSuccess("");
         setSubmitting(true);
 
-        const token = localStorage.getItem("token");
-
         const dataToSend = {
             ...form,
             alamat: form.alamat.toUpperCase(),
@@ -81,12 +77,7 @@ export default function EditProfilePage() {
         };
 
         try {
-            await axios.put("/api/profile", dataToSend, {
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+            await axios.put("/api/profile", dataToSend);
 
             setSuccess("Profil berhasil diperbarui!");
 

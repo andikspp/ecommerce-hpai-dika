@@ -1,15 +1,20 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { productImageSrc } from "@/lib/imageUrl";
 
-export default function OrderConfirmationPage() {
+// Component yang menggunakan useSearchParams
+function OrderConfirmationContent() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const orderId = searchParams.get("orderId") || searchParams.get("id");
+
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
-    const searchParams = useSearchParams();
-    const orderId = searchParams.get("id");
+    const [error, setError] = useState(null);
     const [finishing, setFinishing] = useState(false);
     const [ratings, setRatings] = useState({});
     const [reviews, setReviews] = useState({});
@@ -20,52 +25,54 @@ export default function OrderConfirmationPage() {
 
     useEffect(() => {
         const fetchOrderAndReviews = async () => {
-            if (orderId) {
-                try {
-                    // Fetch order data
-                    const orderRes = await axios.get(`/api/order?id=${orderId}`);
-                    if (orderRes.data) {
-                        setOrder(orderRes.data);
-                        setUserId(orderRes.data.userId);
-
-                        // Initialize ratings dan reviews untuk setiap item
-                        const initialRatings = {};
-                        const initialReviews = {};
-                        orderRes.data.items?.forEach(item => {
-                            initialRatings[item.product.id] = 0;
-                            initialReviews[item.product.id] = '';
-                        });
-                        setRatings(initialRatings);
-                        setReviews(initialReviews);
-
-                        // Fetch existing reviews untuk order ini
-                        try {
-                            const reviewsRes = await axios.get(`/api/review/order?orderId=${orderId}`);
-                            if (reviewsRes.data && reviewsRes.data.success) {
-                                const reviewsData = reviewsRes.data.reviews;
-                                setExistingReviews(reviewsData); // Simpan data review lengkap
-
-                                const reviewedProductIds = new Set(reviewsData.map(review => review.productId));
-                                setReviewedProducts(reviewedProductIds);
-
-                                console.log("Existing reviews found:", reviewsData);
-                                console.log("Reviewed product IDs:", Array.from(reviewedProductIds));
-                            }
-                        } catch (reviewError) {
-                            console.log("No existing reviews found or error fetching reviews:", reviewError);
-                            setExistingReviews([]); // Set empty array jika tidak ada review
-                        }
-                    }
-                    console.log("Order fetched successfully:", orderRes.data);
-                } catch (err) {
-                    console.error("Error fetching order:", err);
-                    setOrder(null);
-                }
-            } else {
-                const lastOrder = localStorage.getItem("lastOrder");
-                if (lastOrder) setOrder(JSON.parse(lastOrder));
+            if (!orderId) {
+                setError("Order ID tidak ditemukan");
+                setLoading(false);
+                return;
             }
-            setLoading(false);
+
+            try {
+                // Fetch order data
+                const orderRes = await axios.get(`/api/orders/${orderId}`);
+                if (orderRes.data) {
+                    setOrder(orderRes.data);
+                    setUserId(orderRes.data.userId);
+
+                    // Initialize ratings dan reviews untuk setiap item
+                    const initialRatings = {};
+                    const initialReviews = {};
+                    orderRes.data.items?.forEach(item => {
+                        initialRatings[item.product.id] = 0;
+                        initialReviews[item.product.id] = '';
+                    });
+                    setRatings(initialRatings);
+                    setReviews(initialReviews);
+
+                    // Fetch existing reviews untuk order ini
+                    try {
+                        const reviewsRes = await axios.get(`/api/reviews/order/${orderId}`);
+                        if (reviewsRes.data && reviewsRes.data.success) {
+                            const reviewsData = reviewsRes.data.reviews;
+                            setExistingReviews(reviewsData);
+
+                            const reviewedProductIds = new Set(reviewsData.map(review => review.productId));
+                            setReviewedProducts(reviewedProductIds);
+
+                            console.log("Existing reviews found:", reviewsData);
+                            console.log("Reviewed product IDs:", Array.from(reviewedProductIds));
+                        }
+                    } catch (reviewError) {
+                        console.log("No existing reviews found or error fetching reviews:", reviewError);
+                        setExistingReviews([]);
+                    }
+                }
+                console.log("Order fetched successfully:", orderRes.data);
+            } catch (err) {
+                setError("Gagal memuat data pesanan");
+                console.error("Error fetching order:", err);
+            } finally {
+                setLoading(false);
+            }
         };
 
         fetchOrderAndReviews();
@@ -113,7 +120,7 @@ export default function OrderConfirmationPage() {
         setSubmittingReview(prev => ({ ...prev, [productId]: true }));
 
         try {
-            const res = await axios.post('/api/review', {
+            const res = await axios.post('/api/reviews', {
                 orderId: order.id,
                 productId: productId,
                 rating: rating,
@@ -127,14 +134,13 @@ export default function OrderConfirmationPage() {
 
                 // Tambahkan review baru ke existingReviews state
                 const newReview = {
-                    id: res.data.review?.id || Date.now(), // Gunakan ID dari response atau timestamp
+                    id: res.data.review?.id || Date.now(),
                     productId: productId,
                     orderId: order.id,
                     userId: userId,
                     rating: rating,
                     review: review,
-                    createdAt: new Date().toISOString(), // Gunakan timestamp saat ini
-                    // Tambahan field lain jika diperlukan
+                    createdAt: new Date().toISOString(),
                     user: {
                         name: res.data.review?.user?.name || 'Anda'
                     },
@@ -179,9 +185,8 @@ export default function OrderConfirmationPage() {
             if (error?.response?.data?.message?.includes('sudah memberikan ulasan')) {
                 setReviewedProducts(prev => new Set([...prev, productId]));
 
-                // Jika sudah ada review sebelumnya, fetch ulang data review untuk update tampilan
                 try {
-                    const reviewsRes = await axios.get(`/api/review/order?orderId=${order.id}`);
+                    const reviewsRes = await axios.get(`/api/reviews/order/${order.id}`);
                     if (reviewsRes.data && reviewsRes.data.success) {
                         const reviewsData = reviewsRes.data.reviews;
                         setExistingReviews(reviewsData);
@@ -217,15 +222,13 @@ export default function OrderConfirmationPage() {
         setFinishing(true);
 
         try {
-            // PATCH ke /api/order?id=order.id
-            const res = await axios.patch(`/api/order?id=${order.id}`, {
+            const res = await axios.put(`/api/orders/${order.id}/status`, {
                 status: "delivered"
             });
 
             if (res.data) {
                 setOrder({ ...order, status: "delivered" });
 
-                // Modern notification dengan SweetAlert2
                 await Swal.fire({
                     icon: 'success',
                     title: 'Pesanan Selesai! 🎉',
@@ -270,17 +273,10 @@ export default function OrderConfirmationPage() {
                         confirmButton: 'px-8 py-3 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5'
                     }
                 });
-
-                // Optional: Auto redirect after notification
-                setTimeout(() => {
-                    // Uncomment jika ingin auto redirect
-                    // window.location.href = '/orders';
-                }, 1000);
             }
         } catch (error) {
             console.error("Error finishing order:", error);
 
-            // Modern error notification
             await Swal.fire({
                 icon: 'error',
                 title: 'Oops! Ada Kesalahan 😔',
@@ -306,15 +302,6 @@ export default function OrderConfirmationPage() {
                 cancelButtonText: 'Hubungi CS',
                 cancelButtonColor: '#6B7280',
                 background: '#ffffff',
-                backdrop: `
-                rgba(239, 68, 68, 0.1)
-                url("data:image/svg+xml,%3csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3e%3cg fill='none' fill-rule='evenodd'%3e%3cg fill='%23EF4444' fill-opacity='0.1'%3e%3ccircle cx='30' cy='30' r='4'/%3e%3c/g%3e%3c/g%3e%3c/svg%3e")
-                left top
-                repeat
-            `,
-                showClass: {
-                    popup: 'animate__animated animate__shakeX'
-                },
                 customClass: {
                     popup: 'rounded-3xl shadow-2xl',
                     title: 'text-2xl font-bold text-gray-800',
@@ -323,7 +310,6 @@ export default function OrderConfirmationPage() {
                 }
             }).then((result) => {
                 if (result.dismiss === Swal.DismissReason.cancel) {
-                    // Redirect ke WhatsApp CS
                     window.open('https://wa.me/6282294317043?text=Halo,%20saya%20mengalami%20masalah%20dengan%20pesanan%20saya', '_blank');
                 }
             });
@@ -343,7 +329,7 @@ export default function OrderConfirmationPage() {
         );
     }
 
-    if (!order) {
+    if (error || !order) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-gray-900 dark:via-green-900 dark:to-emerald-900 flex items-center justify-center px-4">
                 <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-12 max-w-md w-full text-center">
@@ -352,7 +338,7 @@ export default function OrderConfirmationPage() {
                         Pesanan Tidak Ditemukan
                     </h1>
                     <p className="text-gray-600 dark:text-gray-400 mb-8">
-                        Silakan periksa kembali link pesanan Anda
+                        {error || "Pesanan yang Anda cari tidak dapat ditemukan."}
                     </p>
                     <Link
                         href="/"
@@ -511,7 +497,7 @@ export default function OrderConfirmationPage() {
                             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 inline-block">
                                 <p className="text-sm font-medium">Nomor Pesanan</p>
                                 <p className="text-xl font-bold">
-                                    {order.noOrder || order.orderId || order.id || '-'}
+                                    #{order.noOrder}
                                 </p>
                             </div>
                         </div>
@@ -539,7 +525,7 @@ export default function OrderConfirmationPage() {
                                                     day: "2-digit",
                                                     month: "long",
                                                     year: "numeric"
-                                                }) : (order.date || '-')}
+                                                }) : '-'}
                                             </span>
                                         </div>
 
@@ -601,18 +587,35 @@ export default function OrderConfirmationPage() {
                                     {/* Items */}
                                     <div className="space-y-3 mb-6">
                                         {order.items?.length > 0 ? order.items.map((item, idx) => (
-                                            <div key={idx} className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
-                                                <div className="flex-1">
-                                                    <span className="text-gray-800 dark:text-white font-medium">
-                                                        {item.product?.name || 'Produk'}
-                                                    </span>
-                                                    <span className="text-gray-600 dark:text-gray-400 ml-2">
-                                                        x{item.qty}
-                                                    </span>
+                                            <div key={idx} className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                                <div className="w-16 h-16 bg-gray-200 dark:bg-gray-600 rounded-lg overflow-hidden">
+                                                    {item.product?.imageUrl ? (
+                                                        <img
+                                                            src={productImageSrc(item.product.imageUrl)}
+                                                            alt={item.product.name}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center">
+                                                            <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                                            </svg>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                <span className="font-semibold text-gray-800 dark:text-white">
-                                                    Rp {(item.price * item.qty).toLocaleString("id-ID")}
-                                                </span>
+                                                <div className="flex-1">
+                                                    <h4 className="font-medium text-gray-900 dark:text-white">
+                                                        {item.product?.name || 'Produk'}
+                                                    </h4>
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                        Qty: {item.qty} × Rp {item.price?.toLocaleString("id-ID")}
+                                                    </p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="font-semibold text-gray-900 dark:text-white">
+                                                        Rp {(item.qty * item.price).toLocaleString("id-ID")}
+                                                    </p>
+                                                </div>
                                             </div>
                                         )) : (
                                             <div className="text-gray-400 italic text-center py-4">
@@ -670,7 +673,6 @@ export default function OrderConfirmationPage() {
                             <div className="space-y-8">
                                 {order.items.map((item) => {
                                     const isReviewed = reviewedProducts.has(item.product.id);
-                                    // Cari review untuk produk ini dari data yang sudah di-fetch
                                     const existingReview = existingReviews?.find(
                                         (review) => review.productId === item.product.id
                                     );
@@ -681,8 +683,18 @@ export default function OrderConfirmationPage() {
                                             className="bg-gray-50 dark:bg-gray-700 rounded-2xl p-6 border border-gray-200 dark:border-gray-600"
                                         >
                                             <div className="flex items-start gap-4 mb-4">
-                                                <div className="w-16 h-16 bg-gray-200 dark:bg-gray-600 rounded-lg flex items-center justify-center text-2xl">
-                                                    📦
+                                                <div className="w-16 h-16 bg-gray-200 dark:bg-gray-600 rounded-lg overflow-hidden">
+                                                    {item.product?.imageUrl ? (
+                                                        <img
+                                                            src={productImageSrc(item.product.imageUrl)}
+                                                            alt={item.product.name}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center">
+                                                            <div className="text-2xl">📦</div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <div className="flex-1">
                                                     <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
@@ -768,7 +780,6 @@ export default function OrderConfirmationPage() {
                                                 </div>
                                             ) : (
                                                 <div className="text-center py-8">
-                                                    {/* Tampilkan rating dari database */}
                                                     <div className="text-5xl mb-4">
                                                         {existingReview?.rating ? "⭐".repeat(existingReview.rating) : "⭐⭐⭐⭐⭐"}
                                                     </div>
@@ -778,11 +789,10 @@ export default function OrderConfirmationPage() {
                                                     <p className="text-gray-500 dark:text-gray-500 text-sm mt-2">
                                                         Ulasan Anda membantu pembeli lain membuat keputusan yang tepat
                                                     </p>
-                                                    {/* Tampilkan review text dari database */}
                                                     {existingReview?.review && (
                                                         <div className="mt-4 bg-gray-100 dark:bg-gray-600 rounded-lg p-4">
                                                             <p className="text-sm text-gray-700 dark:text-gray-300 italic">
-                                                                "{existingReview.review}"
+                                                                &ldquo;{existingReview.review}&rdquo;
                                                             </p>
                                                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                                                                 Ditulis pada {new Date(existingReview.createdAt).toLocaleDateString("id-ID")}
@@ -859,5 +869,26 @@ export default function OrderConfirmationPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+// Loading component untuk fallback
+function OrderConfirmationLoading() {
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-gray-900 dark:via-green-900 dark:to-emerald-900 flex items-center justify-center">
+            <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+                <p className="text-gray-600 dark:text-gray-400">Memuat konfirmasi pesanan...</p>
+            </div>
+        </div>
+    );
+}
+
+// Main component dengan Suspense wrapper
+export default function OrderConfirmationPage() {
+    return (
+        <Suspense fallback={<OrderConfirmationLoading />}>
+            <OrderConfirmationContent />
+        </Suspense>
     );
 }

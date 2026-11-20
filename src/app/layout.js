@@ -3,6 +3,7 @@ import "./globals.css";
 import NavbarClient from "./navbar";
 import FooterClient from "./footer";
 import { CartProvider } from "./CartContext";
+import AxiosAuth from "./AxiosAuth";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,6 +24,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="id">
       <body>
+        <AxiosAuth />
         <CartProvider>
           <NavbarClient />
           <main>

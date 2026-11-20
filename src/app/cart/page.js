@@ -4,6 +4,8 @@ import Link from "next/link";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useCart } from "../CartContext";
+import { getCurrentUser } from "@/lib/session";
+import { productImageSrc } from "@/lib/imageUrl";
 
 export default function CartPage() {
     const [cart, setCart] = useState([]);
@@ -14,14 +16,7 @@ export default function CartPage() {
     useEffect(() => {
         const fetchCart = async () => {
             const localCart = JSON.parse(localStorage.getItem("cart") || "[]");
-            const token = localStorage.getItem("token");
-            let userId = null;
-            if (token) {
-                try {
-                    const payload = JSON.parse(atob(token.split(".")[1]));
-                    userId = payload.id;
-                } catch { }
-            }
+            const userId = (await getCurrentUser())?.id ?? null;
 
             if (userId) {
                 let dbCart = [];
@@ -97,17 +92,9 @@ export default function CartPage() {
             setCartCount(totalQty);
 
             if (newCart.length === 0) {
-                const token = localStorage.getItem("token");
-                let userId = null;
-                if (token) {
+                if (await getCurrentUser()) {
                     try {
-                        const payload = JSON.parse(atob(token.split(".")[1]));
-                        userId = payload.id;
-                    } catch { }
-                }
-                if (userId) {
-                    try {
-                        await axios.post("/api/cart/save", { userId, cart: [] });
+                        await axios.post("/api/cart/save", { cart: [] });
                     } catch (e) {
                         console.error("Gagal menghapus cart di backend:", e);
                     }
@@ -154,7 +141,7 @@ export default function CartPage() {
         setCartCount(totalQty);
     };
 
-    const handleCheckout = () => {
+    const handleCheckout = async () => {
         // Validasi stok sebelum checkout
         const invalidItems = cart.filter(item => {
             const productId = item.productId || item.id;
@@ -186,8 +173,7 @@ export default function CartPage() {
             return;
         }
 
-        const token = localStorage.getItem("token");
-        if (!token) {
+        if (!(await getCurrentUser())) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Anda belum login',
@@ -202,7 +188,7 @@ export default function CartPage() {
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = "/login";
+                    window.location.href = "/login?next=/checkout";
                 }
             });
             return;
@@ -405,17 +391,13 @@ function CartItem({ item, product, onQtyChange, onRemove }) {
         <div className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors duration-200">
             <div className="flex flex-col sm:flex-row gap-4">
                 {/* Product Image */}
-                <div className="flex-shrink-0">
-                    <img
-                        src={
-                            product.imageUrl?.startsWith("http")
-                                ? product.imageUrl
-                                : `http://localhost:5000${product.imageUrl || ""}`
-                        }
-                        alt={product.name || "Produk"}
-                        className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-600"
-                    />
-                </div>
+                <img
+                    src={
+                        productImageSrc(product.imageUrl)
+                    }
+                    alt={product.name || "Produk"}
+                    className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-600"
+                />
 
                 {/* Product Info */}
                 <div className="flex-1 min-w-0">

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import AdminSidebar from "@/components/AdminSidebar";
 import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -19,8 +19,11 @@ import {
     FaTimes,
     FaEdit
 } from "react-icons/fa";
+import { logoutAdminAndRedirect } from "@/lib/session";
+import { productImageSrc } from "@/lib/imageUrl";
 
-export default function EditProdukPage() {
+// Component yang menggunakan useSearchParams
+function EditProdukContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const id = searchParams.get("id");
@@ -40,12 +43,9 @@ export default function EditProdukPage() {
 
     useEffect(() => {
         if (typeof window !== "undefined") {
-            const token = localStorage.getItem("adminToken");
-            if (!token) {
-                window.location.href = "/admin/login";
-            } else {
-                setIsChecking(false);
-            }
+            // Akses sudah dijaga src/middleware.js (cookie sesi admin); sesi kedaluwarsa
+            // ditangani interceptor di AxiosAuth.js (redirect ke /admin/login saat API membalas 401).
+            setIsChecking(false);
         }
     }, []);
 
@@ -56,7 +56,7 @@ export default function EditProdukPage() {
             if (!id) return;
             try {
                 // Ambil produk by id
-                const res = await axios.get(`/api/admin/produk/${id}`);
+                const res = await axios.get(`/api/produk/${id}`);
                 const produk = res.data;
                 setName(produk.name ?? "");
                 setPrice(produk.price ?? "");
@@ -67,7 +67,7 @@ export default function EditProdukPage() {
                 setIsActive(produk.isActive ?? true);
 
                 // Ambil daftar kategori
-                const kategoriRes = await axios.get("/api/admin/kategori");
+                const kategoriRes = await axios.get("/api/kategori");
                 setCategories(Array.isArray(kategoriRes.data) ? kategoriRes.data : []);
             } catch (err) {
                 Swal.fire({
@@ -104,9 +104,7 @@ export default function EditProdukPage() {
 
     const handleLogout = (e) => {
         e.preventDefault();
-        localStorage.removeItem("adminToken");
-        localStorage.removeItem("adminUsername");
-        window.location.href = "/admin/login";
+        logoutAdminAndRedirect();
     };
 
     const handleSubmit = async (e) => {
@@ -123,7 +121,7 @@ export default function EditProdukPage() {
                 formData.append("image", imageFile);
             }
 
-            await axios.put(`/api/admin/produk/${id}`, formData, {
+            await axios.put(`/api/produk/${id}`, formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 
@@ -310,7 +308,7 @@ export default function EditProdukPage() {
                                     <div className="w-full h-40 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center relative overflow-hidden">
                                         {imageUrl ? (
                                             <img
-                                                src={imageUrl.startsWith("http") ? imageUrl : `http://localhost:5000${imageUrl}`}
+                                                src={productImageSrc(imageUrl)}
                                                 alt="Gambar Produk"
                                                 className="w-full h-full object-cover"
                                             />
@@ -335,7 +333,7 @@ export default function EditProdukPage() {
                                             <input
                                                 id="image-input"
                                                 type="file"
-                                                accept="image/*"
+                                                accept="image/jpeg,image/png,image/webp"
                                                 className="hidden"
                                                 onChange={handleImageChange}
                                             />
@@ -440,5 +438,31 @@ export default function EditProdukPage() {
                 </div>
             </main>
         </div>
+    );
+}
+
+// Loading component untuk fallback
+function EditProdukLoading() {
+    return (
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+            <div className="text-center">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600 mx-auto mb-6"></div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                    Memuat Data Produk...
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400">
+                    Mohon tunggu sebentar
+                </p>
+            </div>
+        </div>
+    );
+}
+
+// Main component dengan Suspense wrapper
+export default function EditProdukPage() {
+    return (
+        <Suspense fallback={<EditProdukLoading />}>
+            <EditProdukContent />
+        </Suspense>
     );
 }

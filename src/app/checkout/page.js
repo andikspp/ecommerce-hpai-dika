@@ -3,6 +3,8 @@ import React, { use, useEffect, useState } from "react";
 import Link from "next/link";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { getCurrentUser } from "@/lib/session";
+import { productImageSrc } from "@/lib/imageUrl";
 
 export default function CheckoutPage() {
     const [cart, setCart] = useState([]);
@@ -15,82 +17,67 @@ export default function CheckoutPage() {
     const [step, setStep] = useState(1);
 
     useEffect(() => {
-        if (typeof window !== "undefined") {
-            const token = localStorage.getItem("token");
-            if (!token) {
-                window.location.href = "/login";
-            } else {
-                setLoading(false);
+        // Halaman ini dijaga src/middleware.js (harus login). Data user diambil dari backend
+        // memakai cookie sesi httpOnly yang dikirim browser otomatis.
+        const loadCheckout = async () => {
+            const me = await getCurrentUser();
+            if (!me) {
+                window.location.href = "/login?next=/checkout";
+                return;
             }
-        }
 
-        // Ambil cart dari localStorage
-        let localCart = [];
-        try {
-            localCart = JSON.parse(localStorage.getItem("cart") || "[]");
-        } catch {
-            localCart = [];
-        }
-        setCart(localCart);
-        if (localCart.length > 0) {
-            // Hitung total dari localCart
-            setTotal(localCart.reduce((sum, item) => {
-                const price = item.price !== undefined ? item.price : (item.product?.price || 0);
-                return sum + (price * item.qty);
-            }, 0));
-            setLoading(false);
-        } else {
-            // Jika cart kosong di localStorage, ambil total dari server
-            const token = localStorage.getItem("token");
-            if (token) {
-                const userId = JSON.parse(atob(token.split('.')[1])).id; // Ambil userId dari token
-                console.log("Fetching cart total for userId:", userId);
-                axios.get(`/api/cart?userId=${userId}`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                })
-                    .then((res) => {
-                        const cartData = res.data.cart || [];
-                        setCart(cartData);
-                        setTotal(cartData.reduce((sum, item) => sum + (item.price * item.qty), 0));
-                        setLoading(false);
-                    })
-                    .catch(() => {
-                        setTotal(0);
-                        setCart([]);
-                        setLoading(false);
-                    });
-            } else {
-                console.log("No token found, setting empty cart and total");
-                setTotal(0);
-                setCart([]);
-                setLoading(false);
+            // Ambil cart dari localStorage
+            let localCart = [];
+            try {
+                localCart = JSON.parse(localStorage.getItem("cart") || "[]");
+            } catch {
+                localCart = [];
             }
-        }
-        // Ambil user dari token jika ada (tetap seperti sebelumnya)
-        const token = localStorage.getItem("token");
-        if (token) {
-            axios.get("/api/profile", {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-                .then((res) => {
-                    setUser(res.data);
-                    setLoading(false);
-                })
-                .catch(() => {
-                    setUser(null);
-                    setLoading(false);
-                });
-        } else {
+
+            if (localCart.length > 0) {
+                setCart(localCart);
+                // Hitung total dari localCart (hanya tampilan; total final dihitung server)
+                setTotal(localCart.reduce((sum, item) => {
+                    const price = item.price !== undefined ? item.price : (item.product?.price || 0);
+                    return sum + (price * item.qty);
+                }, 0));
+            } else {
+                // Jika cart kosong di localStorage, ambil dari server
+                try {
+                    const res = await axios.get(`/api/cart/${me.id}`);
+                    // Backend mengembalikan { items: [{ productId, qty, product }] }
+                    const cartData = (res.data.items || []).map(item => ({
+                        ...item,
+                        id: item.productId,
+                        name: item.product?.name,
+                        price: item.product?.price || 0,
+                        imageUrl: item.product?.imageUrl,
+                    }));
+                    setCart(cartData);
+                    setTotal(cartData.reduce((sum, item) => sum + (item.price * item.qty), 0));
+                } catch {
+                    setCart([]);
+                    setTotal(0);
+                }
+            }
+
+            try {
+                const res = await axios.get("/api/profile");
+                setUser(res.data);
+            } catch {
+                setUser(null);
+            }
             setLoading(false);
-        }
+        };
+        loadCheckout();
     }, []);
 
     // skrip snap midtrans
     useEffect(() => {
         if (!window.snap) {
             const script = document.createElement("script");
-            script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
-            script.setAttribute("data-client-key", "Mid-client-65HdGI2I5ScM9V8C"); // Ganti dengan client key sandbox Anda
+            script.src = process.env.NEXT_PUBLIC_MIDTRANS_SNAP_URL;
+            script.setAttribute("data-client-key", process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY);
             script.async = true;
             document.body.appendChild(script);
         }
@@ -108,86 +95,48 @@ export default function CheckoutPage() {
                 }
             });
 
-            // Kirim data order ke backend untuk generate snapToken
+            // Server yang membuat order: harga, ongkir, dan total dihitung dari database.
+            // Browser hanya mengirim produk + jumlah yang dibeli.
             const res = await axios.post("/api/create-transaction", {
-                cart,
-                user,
-                ongkir,
-                total: total + (ongkir || 0),
+                items: cart.map(item => ({
+                    productId: item.productId || (item.product && item.product.id) || item.id,
+                    qty: item.qty,
+                })),
                 shippingMethod,
-                // Tambahkan data lain jika perlu
+                note: note || "",
             });
-            const { snapToken } = res.data;
+            const { snapToken, orderId } = res.data;
+
+            // Order sudah tercatat (status pending) dan stok sudah dipesan,
+            // jadi keranjang lokal dikosongkan sekarang.
+            localStorage.removeItem("cart");
+            const confirmationUrl = `/order-confirmation?id=${orderId}`;
 
             // Close loading
             Swal.close();
 
-            // Tampilkan modal Snap
+            // Tampilkan modal Snap. Status "paid" TIDAK ditentukan di sini, melainkan oleh
+            // webhook Midtrans ke backend. Callback ini hanya untuk mengarahkan user.
             window.snap.pay(snapToken, {
-                onSuccess: function (result) {
-                    try {
-                        console.log("Payment success:", result);
-                        const orderData = {
-                            shippingMethod,
-                            note: note || "",
-                            userId: user?.id || null,
-                            noOrder: `ORDER-${user.id}-${Date.now()}`,
-                            ongkir: ongkir || 0,
-                            total: total + (ongkir || 0),
-                            address: user?.alamat || "",
-                            kelurahan: user?.kelurahan || "",
-                            kecamatan: user?.kecamatan || "",
-                            kota: user?.kota || "",
-                            provinsi: user?.provinsi || "",
-                            paymentMethod: null,
-                            paymentStatus: "paid",
-                            paymentTime: new Date().toISOString(),
-                            paymentId: null,
-                            snapToken: snapToken,
-                            status: "pending",
-                            items: cart.map(item => ({
-                                productId: item.productId || (item.product && item.product.id) || item.id,
-                                qty: item.qty,
-                                price: item.price || (item.product && item.product.price) || 0,
-                            })),
-                        }
-                        console.log("Order data to create:", orderData);
-
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Pembayaran Berhasil!',
-                            text: 'Sedang membuat pesanan...',
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-
-                        axios.post("/api/order", orderData)
-                            .then((response) => {
-                                console.log("Order created successfully:", response.data);
-                                localStorage.setItem("lastOrder", JSON.stringify(response.data));
-                                localStorage.removeItem("cart");
-                                // Redirect ke halaman konfirmasi atau sukses
-                                window.location.href = "/order-confirmation";
-                            })
-                            .catch((error) => {
-                                console.error("Error creating order:", error);
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Gagal!',
-                                    text: 'Gagal membuat order. Silakan coba lagi.',
-                                });
-                            });
-                    } catch (error) {
-                        console.error("Error handling payment success:", error);
-                    }
+                onSuccess: function () {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Pembayaran Berhasil!',
+                        text: 'Mengarahkan ke detail pesanan...',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = confirmationUrl;
+                    });
                 },
-                onPending: function (result) {
-                    console.log("Payment pending:", result);
+                onPending: function () {
                     Swal.fire({
                         icon: "info",
-                        title: "Pembayaran Tertunda",
-                        text: "Silakan selesaikan pembayaran Anda.",
+                        title: "Menunggu Pembayaran",
+                        text: "Silakan selesaikan pembayaran Anda. Status pesanan akan diperbarui otomatis.",
                         confirmButtonColor: '#16a34a'
+                    }).then(() => {
+                        window.location.href = confirmationUrl;
                     });
                 },
                 onError: function (result) {
@@ -201,9 +150,11 @@ export default function CheckoutPage() {
                 onClose: function () {
                     Swal.fire({
                         icon: 'warning',
-                        title: 'Pembayaran Dibatalkan',
-                        text: 'Anda belum menyelesaikan pembayaran.',
+                        title: 'Pembayaran Belum Selesai',
+                        text: 'Pesanan dibatalkan otomatis jika tidak dibayar dalam 60 menit.',
                         confirmButtonColor: '#16a34a'
+                    }).then(() => {
+                        window.location.href = confirmationUrl;
                     });
                 }
             });
@@ -211,8 +162,9 @@ export default function CheckoutPage() {
             Swal.close();
             Swal.fire({
                 icon: 'error',
-                title: 'Error',
-                text: 'Gagal memproses pembayaran. Silakan coba lagi.',
+                title: 'Gagal Checkout',
+                // Pesan dari server, misalnya "Stok X tidak mencukupi" atau "Lengkapi alamat di profil"
+                text: err.response?.data?.error || 'Gagal memproses pembayaran. Silakan coba lagi.',
                 confirmButtonColor: '#16a34a'
             });
         }
@@ -411,8 +363,8 @@ export default function CheckoutPage() {
                                         <label
                                             key={option.value}
                                             className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${shippingMethod === option.value
-                                                    ? "border-green-500 bg-green-50 dark:bg-green-900/30"
-                                                    : "border-gray-200 dark:border-gray-600 hover:border-green-300 dark:hover:border-green-500"
+                                                ? "border-green-500 bg-green-50 dark:bg-green-900/30"
+                                                : "border-gray-200 dark:border-gray-600 hover:border-green-300 dark:hover:border-green-500"
                                                 }`}
                                         >
                                             <input
@@ -496,7 +448,9 @@ export default function CheckoutPage() {
                                             return (
                                                 <div key={item.id} className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
                                                     <img
-                                                        src={product.imageUrl?.startsWith("http") ? product.imageUrl : `http://localhost:5000${product.imageUrl || ""}`}
+                                                        src={
+                                                            productImageSrc(product.imageUrl)
+                                                        }
                                                         alt={product.name || "Produk"}
                                                         className="w-16 h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-600"
                                                     />
